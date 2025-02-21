@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -16,6 +16,12 @@ import {
   IconButton,
   Tooltip,
   Link,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  InputAdornment,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
@@ -25,6 +31,8 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import UpdateIcon from '@mui/icons-material/Update';
 import SourceIcon from '@mui/icons-material/Source';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import SearchIcon from '@mui/icons-material/Search';
+import SortIcon from '@mui/icons-material/Sort';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   p: 0,
@@ -129,11 +137,31 @@ const SourceLink = styled(Link)(({ theme }) => ({
   },
 }));
 
+const FilterBar = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(3),
+  display: 'flex',
+  gap: theme.spacing(2),
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+}));
+
 const App = () => {
   const theme = useTheme();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPriority, setSelectedPriority] = useState('all');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,6 +200,49 @@ const App = () => {
     }
   };
 
+  // Extract unique categories and priorities from data
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(data.map(item => item.category).filter(Boolean))];
+    return ['all', ...uniqueCategories];
+  }, [data]);
+
+  const priorities = useMemo(() => {
+    const uniquePriorities = [...new Set(data.map(item => item.priority).filter(Boolean))];
+    return ['all', ...uniquePriorities];
+  }, [data]);
+
+  // Filter and sort logic
+  const filteredAndSortedData = useMemo(() => {
+    return data
+      .filter(item => {
+        const matchesSearch = searchQuery === '' ||
+          item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.author?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const matchesPriority = selectedPriority === 'all' || item.priority === selectedPriority;
+
+        return matchesSearch && matchesCategory && matchesPriority;
+      })
+      .sort((a, b) => {
+        const order = sortOrder === 'asc' ? 1 : -1;
+        
+        switch (sortBy) {
+          case 'title':
+            return order * (a.title || '').localeCompare(b.title || '');
+          case 'priority':
+            const priorityOrder = { high: 3, medium: 2, low: 1 };
+            return order * ((priorityOrder[a.priority] || 0) - (priorityOrder[b.priority] || 0));
+          case 'date':
+          default:
+            const dateA = new Date(a.published_at || a.created_at);
+            const dateB = new Date(b.published_at || b.created_at);
+            return order * (dateA - dateB);
+        }
+      });
+  }, [data, searchQuery, selectedCategory, selectedPriority, sortBy, sortOrder]);
+
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', minHeight: '100vh' }}>
       <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', color: 'primary.main' }}>
@@ -192,152 +263,243 @@ const App = () => {
             <Typography color="error">Error: {error}</Typography>
           </Paper>
         ) : (
-          <Grid container spacing={3}>
-            {data && data.map((item, index) => (
-              <Grid item xs={12} md={6} lg={4} key={index}>
-                <StyledPaper>
-                  {item.image_url ? (
-                    <ImageContainer>
-                      <img src={item.image_url} alt={item.title} />
-                      {item.category && (
-                        <CategoryChip 
-                          label={item.category}
-                          size="small"
-                        />
-                      )}
-                    </ImageContainer>
-                  ) : (
-                    item.category && (
-                      <Box sx={{ pt: 2, px: 2 }}>
-                        <CategoryChip 
-                          label={item.category}
-                          size="small"
-                        />
-                      </Box>
-                    )
-                  )}
-                  
-                  <ContentContainer>
-                    <Stack direction="row" spacing={1} mb={2}>
-                      {item.priority && (
-                        <PriorityChip 
-                          icon={<PriorityHighIcon />}
-                          label={item.priority}
-                          size="small"
-                          priority={item.priority.toLowerCase()}
-                        />
-                      )}
-                      <Chip 
-                        icon={item.is_read ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
-                        label={item.is_read ? "Read" : "Unread"}
-                        size="small"
-                        sx={{
-                          bgcolor: item.is_read ? 'success.50' : 'grey.100',
-                          color: item.is_read ? 'success.main' : 'text.secondary',
-                        }}
-                      />
-                    </Stack>
+          <>
+            <FilterBar elevation={0}>
+              <TextField
+                placeholder="Search news..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                size="small"
+                sx={{ minWidth: 200 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: '1.1rem',
-                        mb: 2,
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {item.title}
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  label="Category"
+                >
+                  {categories.map(category => (
+                    <MenuItem key={category} value={category}>
+                      {category === 'all' ? 'All Categories' : category}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  value={selectedPriority}
+                  onChange={(e) => setSelectedPriority(e.target.value)}
+                  label="Priority"
+                >
+                  {priorities.map(priority => (
+                    <MenuItem key={priority} value={priority}>
+                      {priority === 'all' ? 'All Priorities' : priority}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <InputLabel>Sort by</InputLabel>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    label="Sort by"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <SortIcon />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="date">Date</MenuItem>
+                    <MenuItem value="title">Title</MenuItem>
+                    <MenuItem value="priority">Priority</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl size="small" sx={{ minWidth: 100 }}>
+                  <InputLabel>Order</InputLabel>
+                  <Select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    label="Order"
+                  >
+                    <MenuItem value="desc">Newest</MenuItem>
+                    <MenuItem value="asc">Oldest</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </FilterBar>
+
+            <Grid container spacing={3}>
+              {filteredAndSortedData.length === 0 ? (
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography color="text.secondary">
+                      No results found for your search criteria.
                     </Typography>
-
-                    <TruncatedTypography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 2 }}
-                    >
-                      {item.content}
-                    </TruncatedTypography>
-
-                    <Box sx={{ mt: 'auto' }}>
-                      <Divider sx={{ my: 2 }} />
-
-                      {item.author && (
-                        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                          <Avatar 
-                            sx={{ 
-                              width: 32, 
-                              height: 32,
-                              bgcolor: 'primary.main',
-                              fontSize: '0.9rem',
-                            }}
-                          >
-                            {item.author.charAt(0)}
-                          </Avatar>
-                          <Typography variant="body2" fontWeight={500}>
-                            {item.author}
-                          </Typography>
-                        </Stack>
+                  </Paper>
+                </Grid>
+              ) : (
+                filteredAndSortedData.map((item, index) => (
+                  <Grid item xs={12} md={6} lg={4} key={index}>
+                    <StyledPaper>
+                      {item.image_url ? (
+                        <ImageContainer>
+                          <img src={item.image_url} alt={item.title} />
+                          {item.category && (
+                            <CategoryChip 
+                              label={item.category}
+                              size="small"
+                            />
+                          )}
+                        </ImageContainer>
+                      ) : (
+                        item.category && (
+                          <Box sx={{ pt: 2, px: 2 }}>
+                            <CategoryChip 
+                              label={item.category}
+                              size="small"
+                            />
+                          </Box>
+                        )
                       )}
+                      
+                      <ContentContainer>
+                        <Stack direction="row" spacing={1} mb={2}>
+                          {item.priority && (
+                            <PriorityChip 
+                              icon={<PriorityHighIcon />}
+                              label={item.priority}
+                              size="small"
+                              priority={item.priority.toLowerCase()}
+                            />
+                          )}
+                          <Chip 
+                            icon={item.is_read ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
+                            label={item.is_read ? "Read" : "Unread"}
+                            size="small"
+                            sx={{
+                              bgcolor: item.is_read ? 'success.50' : 'grey.100',
+                              color: item.is_read ? 'success.main' : 'text.secondary',
+                            }}
+                          />
+                        </Stack>
 
-                      <Stack spacing={1}>
-                        {item.source_name && (
-                          <MetaInfo>
-                            <SourceIcon />
-                            {item.url ? (
-                              <SourceLink
-                                href={item.url}
-                                onClick={(e) => handleSourceClick(item.url, e)}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                        <Typography 
+                          variant="h6" 
+                          gutterBottom 
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: '1.1rem',
+                            mb: 2,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {item.title}
+                        </Typography>
+
+                        <TruncatedTypography 
+                          variant="body2" 
+                          color="text.secondary" 
+                          sx={{ mb: 2 }}
+                        >
+                          {item.content}
+                        </TruncatedTypography>
+
+                        <Box sx={{ mt: 'auto' }}>
+                          <Divider sx={{ my: 2 }} />
+
+                          {item.author && (
+                            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                              <Avatar 
+                                sx={{ 
+                                  width: 32, 
+                                  height: 32,
+                                  bgcolor: 'primary.main',
+                                  fontSize: '0.9rem',
+                                }}
                               >
-                                {item.source_name}
-                                <OpenInNewIcon />
-                              </SourceLink>
-                            ) : (
-                              <Typography variant="caption">
-                                {item.source_name}
+                                {item.author.charAt(0)}
+                              </Avatar>
+                              <Typography variant="body2" fontWeight={500}>
+                                {item.author}
                               </Typography>
-                            )}
-                          </MetaInfo>
-                        )}
-                        
-                        <MetaInfo>
-                          <CalendarTodayIcon />
-                          <Typography variant="caption">
-                            Published: {item.published_at 
-                              ? new Date(item.published_at).toLocaleDateString('de-DE', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })
-                              : new Date(item.created_at).toLocaleDateString('de-DE', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                          </Typography>
-                        </MetaInfo>
+                            </Stack>
+                          )}
 
-                        {item.updated_at && new Date(item.updated_at).getTime() !== new Date(item.created_at).getTime() && (
-                          <MetaInfo>
-                            <UpdateIcon />
-                            <Typography variant="caption">
-                              Updated: {new Date(item.updated_at).toLocaleDateString('de-DE', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </Typography>
-                          </MetaInfo>
-                        )}
-                      </Stack>
-                    </Box>
-                  </ContentContainer>
-                </StyledPaper>
-              </Grid>
-            ))}
-          </Grid>
+                          <Stack spacing={1}>
+                            {item.source_name && (
+                              <MetaInfo>
+                                <SourceIcon />
+                                {item.url ? (
+                                  <SourceLink
+                                    href={item.url}
+                                    onClick={(e) => handleSourceClick(item.url, e)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {item.source_name}
+                                    <OpenInNewIcon />
+                                  </SourceLink>
+                                ) : (
+                                  <Typography variant="caption">
+                                    {item.source_name}
+                                  </Typography>
+                                )}
+                              </MetaInfo>
+                            )}
+                            
+                            <MetaInfo>
+                              <CalendarTodayIcon />
+                              <Typography variant="caption">
+                                Published: {item.published_at 
+                                  ? new Date(item.published_at).toLocaleDateString('de-DE', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })
+                                  : new Date(item.created_at).toLocaleDateString('de-DE', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })}
+                              </Typography>
+                            </MetaInfo>
+
+                            {item.updated_at && new Date(item.updated_at).getTime() !== new Date(item.created_at).getTime() && (
+                              <MetaInfo>
+                                <UpdateIcon />
+                                <Typography variant="caption">
+                                  Updated: {new Date(item.updated_at).toLocaleDateString('de-DE', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </Typography>
+                              </MetaInfo>
+                            )}
+                          </Stack>
+                        </Box>
+                      </ContentContainer>
+                    </StyledPaper>
+                  </Grid>
+                ))
+              )}
+            </Grid>
+          </>
         )}
       </Container>
     </Box>
