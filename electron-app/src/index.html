@@ -3,11 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>InfoSphere</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>InfoSphere Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', sans-serif;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100">
+  <body>
     <div id="root"></div>
-    <script src="../dist/renderer.js"></script>
+    <script type="module" src="../dist/renderer.js"></script>
   </body>
 </html>

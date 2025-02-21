@@ -6,7 +6,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'renderer.js',
-    publicPath: './dist/'
+    publicPath: '/dist/'
   },
   module: {
     rules: [
@@ -16,7 +16,10 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-react'],
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-react'
+            ],
             plugins: ['@babel/plugin-transform-runtime']
           }
         }
@@ -26,5 +29,6 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx']
   },
-  target: 'electron-renderer'
+  target: 'electron-renderer',
+  devtool: 'source-map'
 }; 
