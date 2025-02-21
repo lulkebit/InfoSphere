@@ -1,0 +1,30 @@
+{
+  "name": "infosphere",
+  "version": "1.0.0",
+  "description": "InfoSphere - Your Information Hub",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "webpack && electron .",
+    "dev": "webpack --watch --mode development",
+    "build": "webpack --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "@babel/core": "^7.23.0",
+    "@babel/preset-react": "^7.22.15",
+    "electron-reloader": "^1.2.3",
+    "@babel/plugin-transform-runtime": "^7.23.0",
+    "@babel/runtime": "^7.23.0",
+    "babel-loader": "^9.1.3",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
