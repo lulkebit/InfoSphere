@@ -22,8 +22,10 @@ import {
   FormControl,
   InputLabel,
   InputAdornment,
+  Alert,
+  Fade,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
@@ -33,27 +35,44 @@ import SourceIcon from '@mui/icons-material/Source';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
+import FilterListIcon from '@mui/icons-material/FilterList';
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
+// Styled Components
+const StyledPaper = styled(Paper)(({ theme, hasImage }) => ({
   p: 0,
   display: 'flex',
   flexDirection: 'column',
-  height: 'auto',
-  minHeight: 320,
+  height: '100%',
+  minHeight: hasImage ? 420 : 280,
   position: 'relative',
   overflow: 'hidden',
-  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  backgroundColor: theme.palette.background.paper,
   '&:hover': {
     transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[8],
+    boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.1)}`,
   },
 }));
 
-const ContentContainer = styled(Box)(({ theme }) => ({
+const ContentContainer = styled(Box)(({ theme, hasImage }) => ({
   padding: theme.spacing(3),
   display: 'flex',
   flexDirection: 'column',
   flexGrow: 1,
+  gap: theme.spacing(2),
+  height: '100%',
+  position: 'relative',
+  ...(hasImage ? {} : {
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '4px',
+      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+    }
+  })
 }));
 
 const ImageContainer = styled(Box)(({ theme }) => ({
@@ -61,6 +80,7 @@ const ImageContainer = styled(Box)(({ theme }) => ({
   width: '100%',
   overflow: 'hidden',
   position: 'relative',
+  backgroundColor: alpha(theme.palette.primary.main, 0.05),
   '&::after': {
     content: '""',
     position: 'absolute',
@@ -68,38 +88,54 @@ const ImageContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: '40px',
-    background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%)',
+    background: `linear-gradient(to top, ${alpha(theme.palette.common.black, 0.4)} 0%, transparent 100%)`,
   },
   '& img': {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    transition: 'transform 0.3s ease-in-out',
+    transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   '&:hover img': {
     transform: 'scale(1.05)',
   },
 }));
 
-const CategoryChip = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: theme.spacing(2),
-  left: theme.spacing(2),
-  zIndex: 1,
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  backdropFilter: 'blur(4px)',
+const CategoryChip = styled(Chip)(({ theme, hasImage }) => ({
+  position: 'relative',
+  marginBottom: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.background.paper, 1),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.background.paper, 1),
+    transform: 'scale(1.05)',
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+  },
 }));
 
-const PriorityChip = styled(Chip)(({ theme, priority }) => ({
-  backgroundColor: priority === 'high' ? theme.palette.error.light :
-                  priority === 'medium' ? theme.palette.warning.light :
-                  theme.palette.success.light,
-  color: theme.palette.getContrastText(
-    priority === 'high' ? theme.palette.error.light :
-    priority === 'medium' ? theme.palette.warning.light :
-    theme.palette.success.light
-  ),
-}));
+const PriorityChip = styled(Chip)(({ theme, priority }) => {
+  const getColor = () => {
+    switch (priority) {
+      case 'high':
+        return theme.palette.error;
+      case 'medium':
+        return theme.palette.warning;
+      default:
+        return theme.palette.success;
+    }
+  };
+  const color = getColor();
+  
+  return {
+    backgroundColor: alpha(color.main, 0.1),
+    color: color.main,
+    borderColor: alpha(color.main, 0.3),
+    '&:hover': {
+      backgroundColor: alpha(color.main, 0.2),
+    },
+  };
+});
 
 const TruncatedTypography = styled(Typography)({
   overflow: 'hidden',
@@ -114,21 +150,40 @@ const MetaInfo = styled(Stack)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(0.5),
   color: theme.palette.text.secondary,
+  fontSize: '0.875rem',
   '& svg': {
     fontSize: '1rem',
   },
 }));
 
+const SourcesContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  marginTop: theme.spacing(1.5),
+  paddingTop: theme.spacing(1.5),
+  borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+}));
+
 const SourceLink = styled(Link)(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: theme.spacing(0.5),
+  gap: theme.spacing(1),
   color: theme.palette.primary.main,
   textDecoration: 'none',
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  padding: theme.spacing(0.75, 1.5),
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+  transition: 'all 0.2s ease-in-out',
   '&:hover': {
-    textDecoration: 'underline',
-    '& .MuiSvgIcon-root': {
-      transform: 'translateY(-1px)',
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    color: theme.palette.primary.dark,
+    textDecoration: 'none',
+    transform: 'translateY(-1px)',
+    '& .MuiSvgIcon-root:last-child': {
+      transform: 'translateX(2px)',
     },
   },
   '& .MuiSvgIcon-root': {
@@ -144,12 +199,32 @@ const FilterBar = styled(Paper)(({ theme }) => ({
   gap: theme.spacing(2),
   flexWrap: 'wrap',
   alignItems: 'center',
+  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(8px)',
   [theme.breakpoints.down('sm')]: {
     flexDirection: 'column',
     alignItems: 'stretch',
   },
 }));
 
+const SearchTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: theme.palette.background.paper,
+    transition: 'all 0.2s ease-in-out',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.02),
+    },
+    '&.Mui-focused': {
+      backgroundColor: theme.palette.background.paper,
+      '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: 2,
+      },
+    },
+  },
+}));
+
+// Main App Component
 const App = () => {
   const theme = useTheme();
   const [data, setData] = useState([]);
@@ -171,9 +246,7 @@ const App = () => {
           throw new Error('Network response was not ok');
         }
         const jsonData = await response.json();
-        console.log('API Response:', jsonData);
         if (!Array.isArray(jsonData)) {
-          console.log('Response type:', typeof jsonData);
           if (jsonData.results && Array.isArray(jsonData.results)) {
             setData(jsonData.results);
           } else {
@@ -182,10 +255,10 @@ const App = () => {
         } else {
           setData(jsonData);
         }
-        setLoading(false);
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
@@ -244,262 +317,316 @@ const App = () => {
   }, [data, searchQuery, selectedCategory, selectedPriority, sortBy, sortOrder]);
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', minHeight: '100vh' }}>
-      <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', color: 'primary.main' }}>
+    <Box sx={{ 
+      flexGrow: 1, 
+      bgcolor: 'grey.50', 
+      minHeight: '100vh',
+      pb: 4
+    }}>
+      <AppBar 
+        position="sticky" 
+        elevation={0} 
+        sx={{ 
+          bgcolor: alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: 'blur(8px)',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Toolbar>
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            InfoSphere Dashboard
+          <Typography 
+            variant="h5" 
+            component="div" 
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 600,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            InfoSphere
           </Typography>
         </Toolbar>
       </AppBar>
-      
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <FilterBar>
+          <SearchTextField
+            fullWidth
+            placeholder="Search messages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ flexGrow: 1 }}
+          />
+
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+              startAdornment={
+                <InputAdornment position="start">
+                  <FilterListIcon fontSize="small" />
+                </InputAdornment>
+              }
+            >
+              {categories.map(category => (
+                <MenuItem key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Priority</InputLabel>
+            <Select
+              value={selectedPriority}
+              onChange={(e) => setSelectedPriority(e.target.value)}
+              label="Priority"
+              startAdornment={
+                <InputAdornment position="start">
+                  <PriorityHighIcon fontSize="small" />
+                </InputAdornment>
+              }
+            >
+              {priorities.map(priority => (
+                <MenuItem key={priority} value={priority}>
+                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel>Sort by</InputLabel>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              label="Sort by"
+              startAdornment={
+                <InputAdornment position="start">
+                  <SortIcon fontSize="small" />
+                </InputAdornment>
+              }
+            >
+              <MenuItem value="date">Date</MenuItem>
+              <MenuItem value="title">Title</MenuItem>
+              <MenuItem value="priority">Priority</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Tooltip title="Toggle sort order">
+            <IconButton 
+              onClick={() => setSortOrder(order => order === 'asc' ? 'desc' : 'asc')}
+              sx={{ 
+                transform: `rotate(${sortOrder === 'asc' ? 0 : 180}deg)`,
+                transition: 'transform 0.2s ease-in-out',
+              }}
+            >
+              <UpdateIcon />
+            </IconButton>
+          </Tooltip>
+        </FilterBar>
+
         {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <CircularProgress />
           </Box>
-        ) : error ? (
-          <Paper sx={{ p: 3, backgroundColor: '#fff3f3' }}>
-            <Typography color="error">Error: {error}</Typography>
+        ) : filteredAndSortedData.length === 0 ? (
+          <Paper 
+            sx={{ 
+              p: 4, 
+              textAlign: 'center',
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No messages found
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Try adjusting your search criteria or filters
+            </Typography>
           </Paper>
         ) : (
-          <>
-            <FilterBar elevation={0}>
-              <TextField
-                placeholder="Search news..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                size="small"
-                sx={{ minWidth: 200 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  label="Category"
+          <Grid container spacing={3}>
+            {filteredAndSortedData.map((item, index) => {
+              const hasImage = Boolean(item.image_url);
+              
+              return (
+                <Fade 
+                  in={true} 
+                  timeout={300} 
+                  style={{ transitionDelay: `${index * 50}ms` }}
+                  key={item.id}
                 >
-                  {categories.map(category => (
-                    <MenuItem key={category} value={category}>
-                      {category === 'all' ? 'All Categories' : category}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  value={selectedPriority}
-                  onChange={(e) => setSelectedPriority(e.target.value)}
-                  label="Priority"
-                >
-                  {priorities.map(priority => (
-                    <MenuItem key={priority} value={priority}>
-                      {priority === 'all' ? 'All Priorities' : priority}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <InputLabel>Sort by</InputLabel>
-                  <Select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    label="Sort by"
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <SortIcon />
-                      </InputAdornment>
-                    }
-                  >
-                    <MenuItem value="date">Date</MenuItem>
-                    <MenuItem value="title">Title</MenuItem>
-                    <MenuItem value="priority">Priority</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl size="small" sx={{ minWidth: 100 }}>
-                  <InputLabel>Order</InputLabel>
-                  <Select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    label="Order"
-                  >
-                    <MenuItem value="desc">Newest</MenuItem>
-                    <MenuItem value="asc">Oldest</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-            </FilterBar>
-
-            <Grid container spacing={3}>
-              {filteredAndSortedData.length === 0 ? (
-                <Grid item xs={12}>
-                  <Paper sx={{ p: 3, textAlign: 'center' }}>
-                    <Typography color="text.secondary">
-                      No results found for your search criteria.
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ) : (
-                filteredAndSortedData.map((item, index) => (
-                  <Grid item xs={12} md={6} lg={4} key={index}>
-                    <StyledPaper>
-                      {item.image_url ? (
+                  <Grid item xs={12} sm={6} md={4}>
+                    <StyledPaper hasImage={hasImage}>
+                      {hasImage && (
                         <ImageContainer>
-                          <img src={item.image_url} alt={item.title} />
-                          {item.category && (
-                            <CategoryChip 
-                              label={item.category}
-                              size="small"
-                            />
-                          )}
-                        </ImageContainer>
-                      ) : (
-                        item.category && (
-                          <Box sx={{ pt: 2, px: 2 }}>
-                            <CategoryChip 
-                              label={item.category}
-                              size="small"
-                            />
-                          </Box>
-                        )
-                      )}
-                      
-                      <ContentContainer>
-                        <Stack direction="row" spacing={1} mb={2}>
-                          {item.priority && (
-                            <PriorityChip 
-                              icon={<PriorityHighIcon />}
-                              label={item.priority}
-                              size="small"
-                              priority={item.priority.toLowerCase()}
-                            />
-                          )}
-                          <Chip 
-                            icon={item.is_read ? <CheckCircleIcon /> : <RadioButtonUncheckedIcon />}
-                            label={item.is_read ? "Read" : "Unread"}
-                            size="small"
-                            sx={{
-                              bgcolor: item.is_read ? 'success.50' : 'grey.100',
-                              color: item.is_read ? 'success.main' : 'text.secondary',
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24"%3E%3Cpath fill="%23ccc" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/%3E%3C/svg%3E';
                             }}
                           />
-                        </Stack>
+                        </ImageContainer>
+                      )}
+                      <ContentContainer hasImage={hasImage}>
+                        <Stack spacing={2} sx={{ height: '100%' }}>
+                          <Box>
+                            {item.category && (
+                              <CategoryChip
+                                label={item.category}
+                                size="small"
+                                icon={<SourceIcon />}
+                                hasImage={hasImage}
+                              />
+                            )}
+                            <Typography 
+                              variant="h6" 
+                              gutterBottom 
+                              sx={{ 
+                                fontWeight: 600,
+                                fontSize: hasImage ? '1.125rem' : '1.25rem',
+                                lineHeight: 1.3,
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            <TruncatedTypography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                WebkitLineClamp: hasImage ? 3 : 4,
+                              }}
+                            >
+                              {item.content}
+                            </TruncatedTypography>
+                          </Box>
 
-                        <Typography 
-                          variant="h6" 
-                          gutterBottom 
-                          sx={{ 
-                            fontWeight: 600,
-                            fontSize: '1.1rem',
-                            mb: 2,
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {item.title}
-                        </Typography>
-
-                        <TruncatedTypography 
-                          variant="body2" 
-                          color="text.secondary" 
-                          sx={{ mb: 2 }}
-                        >
-                          {item.content}
-                        </TruncatedTypography>
-
-                        <Box sx={{ mt: 'auto' }}>
-                          <Divider sx={{ my: 2 }} />
-
-                          {item.author && (
-                            <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                              <Avatar 
-                                sx={{ 
-                                  width: 32, 
-                                  height: 32,
-                                  bgcolor: 'primary.main',
-                                  fontSize: '0.9rem',
-                                }}
-                              >
-                                {item.author.charAt(0)}
-                              </Avatar>
-                              <Typography variant="body2" fontWeight={500}>
-                                {item.author}
-                              </Typography>
-                            </Stack>
-                          )}
-
-                          <Stack spacing={1}>
-                            {item.source_name && (
+                          <Box sx={{ mt: 'auto' }}>
+                            <Stack 
+                              direction="row" 
+                              spacing={1} 
+                              alignItems="center"
+                              flexWrap="wrap"
+                              sx={{ mb: 1 }}
+                            >
+                              {item.priority && (
+                                <PriorityChip
+                                  label={item.priority}
+                                  size="small"
+                                  priority={item.priority}
+                                  variant="outlined"
+                                />
+                              )}
                               <MetaInfo>
-                                <SourceIcon />
-                                {item.url ? (
+                                <CalendarTodayIcon />
+                                <Typography variant="caption">
+                                  {new Date(item.published_at || item.created_at).toLocaleDateString()}
+                                </Typography>
+                              </MetaInfo>
+                            </Stack>
+
+                            <SourcesContainer>
+                              <Stack direction="column" spacing={1}>
+                                {/* Hauptquelle */}
+                                {item.url && (
                                   <SourceLink
                                     href={item.url}
                                     onClick={(e) => handleSourceClick(item.url, e)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                    {item.source_name}
+                                    <SourceIcon />
+                                    <Box component="span" sx={{ flexGrow: 1 }}>
+                                      {item.source_name || 'Original Source'}
+                                    </Box>
                                     <OpenInNewIcon />
                                   </SourceLink>
-                                ) : (
-                                  <Typography variant="caption">
-                                    {item.source_name}
-                                  </Typography>
                                 )}
-                              </MetaInfo>
-                            )}
-                            
-                            <MetaInfo>
-                              <CalendarTodayIcon />
-                              <Typography variant="caption">
-                                Published: {item.published_at 
-                                  ? new Date(item.published_at).toLocaleDateString('de-DE', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric'
-                                    })
-                                  : new Date(item.created_at).toLocaleDateString('de-DE', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric'
-                                    })}
-                              </Typography>
-                            </MetaInfo>
+                                
+                                {/* Alternative URL */}
+                                {item.source_url && item.source_url !== item.url && (
+                                  <SourceLink
+                                    href={item.source_url}
+                                    onClick={(e) => handleSourceClick(item.source_url, e)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <SourceIcon />
+                                    <Box component="span" sx={{ flexGrow: 1 }}>
+                                      {item.source_name || 'Alternative Source'}
+                                    </Box>
+                                    <OpenInNewIcon />
+                                  </SourceLink>
+                                )}
 
-                            {item.updated_at && new Date(item.updated_at).getTime() !== new Date(item.created_at).getTime() && (
-                              <MetaInfo>
-                                <UpdateIcon />
-                                <Typography variant="caption">
-                                  Updated: {new Date(item.updated_at).toLocaleDateString('de-DE', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </Typography>
-                              </MetaInfo>
-                            )}
-                          </Stack>
-                        </Box>
+                                {/* Link */}
+                                {item.link && item.link !== item.url && item.link !== item.source_url && (
+                                  <SourceLink
+                                    href={item.link}
+                                    onClick={(e) => handleSourceClick(item.link, e)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <SourceIcon />
+                                    <Box component="span" sx={{ flexGrow: 1 }}>
+                                      {item.link_name || 'Related Link'}
+                                    </Box>
+                                    <OpenInNewIcon />
+                                  </SourceLink>
+                                )}
+
+                                {/* Zusätzliche Quellen */}
+                                {item.additional_sources?.map((source, idx) => (
+                                  <SourceLink
+                                    key={idx}
+                                    href={source.url}
+                                    onClick={(e) => handleSourceClick(source.url, e)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <SourceIcon />
+                                    <Box component="span" sx={{ flexGrow: 1 }}>
+                                      {source.name || `Additional Source ${idx + 1}`}
+                                    </Box>
+                                    <OpenInNewIcon />
+                                  </SourceLink>
+                                ))}
+                              </Stack>
+                            </SourcesContainer>
+                          </Box>
+                        </Stack>
                       </ContentContainer>
                     </StyledPaper>
                   </Grid>
-                ))
-              )}
-            </Grid>
-          </>
+                </Fade>
+              );
+            })}
+          </Grid>
         )}
       </Container>
     </Box>
