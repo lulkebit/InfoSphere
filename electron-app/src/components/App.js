@@ -24,6 +24,7 @@ import {
   InputAdornment,
   Alert,
   Fade,
+  Pagination,
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
@@ -231,6 +232,11 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
+  
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -241,19 +247,30 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/messages/');
+        const queryParams = new URLSearchParams({
+          page: page,
+          page_size: itemsPerPage,
+          search: searchQuery,
+          category: selectedCategory !== 'all' ? selectedCategory : '',
+          priority: selectedPriority !== 'all' ? selectedPriority : '',
+          ordering: `${sortOrder === 'desc' ? '-' : ''}${sortBy}`,
+        });
+
+        const response = await fetch(`http://localhost:8000/api/messages/?${queryParams}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
         const jsonData = await response.json();
-        if (!Array.isArray(jsonData)) {
-          if (jsonData.results && Array.isArray(jsonData.results)) {
-            setData(jsonData.results);
-          } else {
-            throw new Error('Expected an array of messages from the server');
-          }
-        } else {
+        
+        if (jsonData.results && Array.isArray(jsonData.results)) {
+          setData(jsonData.results);
+          // Calculate total pages based on count from API
+          setTotalPages(Math.ceil(jsonData.count / itemsPerPage));
+        } else if (Array.isArray(jsonData)) {
           setData(jsonData);
+          setTotalPages(Math.ceil(jsonData.length / itemsPerPage));
+        } else {
+          throw new Error('Expected an array of messages from the server');
         }
       } catch (err) {
         console.error('Fetch error:', err);
@@ -264,7 +281,12 @@ const App = () => {
     };
 
     fetchData();
-  }, []);
+  }, [page, searchQuery, selectedCategory, selectedPriority, sortBy, sortOrder]);
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSourceClick = (url, event) => {
     event.preventDefault();
@@ -451,7 +473,7 @@ const App = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <CircularProgress />
           </Box>
-        ) : filteredAndSortedData.length === 0 ? (
+        ) : data.length === 0 ? (
           <Paper 
             sx={{ 
               p: 4, 
@@ -468,165 +490,202 @@ const App = () => {
             </Typography>
           </Paper>
         ) : (
-          <Grid container spacing={3}>
-            {filteredAndSortedData.map((item, index) => {
-              const hasImage = Boolean(item.image_url);
-              
-              return (
-                <Fade 
-                  in={true} 
-                  timeout={300} 
-                  style={{ transitionDelay: `${index * 50}ms` }}
-                  key={item.id}
-                >
-                  <Grid item xs={12} sm={6} md={4}>
-                    <StyledPaper hasImage={hasImage}>
-                      {hasImage && (
-                        <ImageContainer>
-                          <img 
-                            src={item.image_url} 
-                            alt={item.title}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24"%3E%3Cpath fill="%23ccc" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/%3E%3C/svg%3E';
-                            }}
-                          />
-                        </ImageContainer>
-                      )}
-                      <ContentContainer hasImage={hasImage}>
-                        <Stack spacing={2} sx={{ height: '100%' }}>
-                          <Box>
-                            {item.category && (
-                              <CategoryChip
-                                label={item.category}
-                                size="small"
-                                icon={<SourceIcon />}
-                                hasImage={hasImage}
-                              />
-                            )}
-                            <Typography 
-                              variant="h6" 
-                              gutterBottom 
-                              sx={{ 
-                                fontWeight: 600,
-                                fontSize: hasImage ? '1.125rem' : '1.25rem',
-                                lineHeight: 1.3,
+          <>
+            <Grid container spacing={3}>
+              {filteredAndSortedData.map((item, index) => {
+                const hasImage = Boolean(item.image_url);
+                
+                return (
+                  <Fade 
+                    in={true} 
+                    timeout={300} 
+                    style={{ transitionDelay: `${index * 50}ms` }}
+                    key={item.id}
+                  >
+                    <Grid item xs={12} sm={6} md={4}>
+                      <StyledPaper hasImage={hasImage}>
+                        {hasImage && (
+                          <ImageContainer>
+                            <img 
+                              src={item.image_url} 
+                              alt={item.title}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24"%3E%3Cpath fill="%23ccc" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/%3E%3C/svg%3E';
                               }}
-                            >
-                              {item.title}
-                            </Typography>
-                            <TruncatedTypography 
-                              variant="body2" 
-                              color="text.secondary"
-                              sx={{
-                                WebkitLineClamp: hasImage ? 3 : 4,
-                              }}
-                            >
-                              {item.content}
-                            </TruncatedTypography>
-                          </Box>
-
-                          <Box sx={{ mt: 'auto' }}>
-                            <Stack 
-                              direction="row" 
-                              spacing={1} 
-                              alignItems="center"
-                              flexWrap="wrap"
-                              sx={{ mb: 1 }}
-                            >
-                              {item.priority && (
-                                <PriorityChip
-                                  label={item.priority}
+                            />
+                          </ImageContainer>
+                        )}
+                        <ContentContainer hasImage={hasImage}>
+                          <Stack spacing={2} sx={{ height: '100%' }}>
+                            <Box>
+                              {item.category && (
+                                <CategoryChip
+                                  label={item.category}
                                   size="small"
-                                  priority={item.priority}
-                                  variant="outlined"
+                                  icon={<SourceIcon />}
+                                  hasImage={hasImage}
                                 />
                               )}
-                              <MetaInfo>
-                                <CalendarTodayIcon />
-                                <Typography variant="caption">
-                                  {new Date(item.published_at || item.created_at).toLocaleDateString()}
-                                </Typography>
-                              </MetaInfo>
-                            </Stack>
+                              <Typography 
+                                variant="h6" 
+                                gutterBottom 
+                                sx={{ 
+                                  fontWeight: 600,
+                                  fontSize: hasImage ? '1.125rem' : '1.25rem',
+                                  lineHeight: 1.3,
+                                }}
+                              >
+                                {item.title}
+                              </Typography>
+                              <TruncatedTypography 
+                                variant="body2" 
+                                color="text.secondary"
+                                sx={{
+                                  WebkitLineClamp: hasImage ? 3 : 4,
+                                }}
+                              >
+                                {item.content}
+                              </TruncatedTypography>
+                            </Box>
 
-                            <SourcesContainer>
-                              <Stack direction="column" spacing={1}>
-                                {/* Hauptquelle */}
-                                {item.url && (
-                                  <SourceLink
-                                    href={item.url}
-                                    onClick={(e) => handleSourceClick(item.url, e)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <SourceIcon />
-                                    <Box component="span" sx={{ flexGrow: 1 }}>
-                                      {item.source_name || 'Original Source'}
-                                    </Box>
-                                    <OpenInNewIcon />
-                                  </SourceLink>
+                            <Box sx={{ mt: 'auto' }}>
+                              <Stack 
+                                direction="row" 
+                                spacing={1} 
+                                alignItems="center"
+                                flexWrap="wrap"
+                                sx={{ mb: 1 }}
+                              >
+                                {item.priority && (
+                                  <PriorityChip
+                                    label={item.priority}
+                                    size="small"
+                                    priority={item.priority}
+                                    variant="outlined"
+                                  />
                                 )}
-                                
-                                {/* Alternative URL */}
-                                {item.source_url && item.source_url !== item.url && (
-                                  <SourceLink
-                                    href={item.source_url}
-                                    onClick={(e) => handleSourceClick(item.source_url, e)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <SourceIcon />
-                                    <Box component="span" sx={{ flexGrow: 1 }}>
-                                      {item.source_name || 'Alternative Source'}
-                                    </Box>
-                                    <OpenInNewIcon />
-                                  </SourceLink>
-                                )}
-
-                                {/* Link */}
-                                {item.link && item.link !== item.url && item.link !== item.source_url && (
-                                  <SourceLink
-                                    href={item.link}
-                                    onClick={(e) => handleSourceClick(item.link, e)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <SourceIcon />
-                                    <Box component="span" sx={{ flexGrow: 1 }}>
-                                      {item.link_name || 'Related Link'}
-                                    </Box>
-                                    <OpenInNewIcon />
-                                  </SourceLink>
-                                )}
-
-                                {/* Zusätzliche Quellen */}
-                                {item.additional_sources?.map((source, idx) => (
-                                  <SourceLink
-                                    key={idx}
-                                    href={source.url}
-                                    onClick={(e) => handleSourceClick(source.url, e)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <SourceIcon />
-                                    <Box component="span" sx={{ flexGrow: 1 }}>
-                                      {source.name || `Additional Source ${idx + 1}`}
-                                    </Box>
-                                    <OpenInNewIcon />
-                                  </SourceLink>
-                                ))}
+                                <MetaInfo>
+                                  <CalendarTodayIcon />
+                                  <Typography variant="caption">
+                                    {new Date(item.published_at || item.created_at).toLocaleDateString()}
+                                  </Typography>
+                                </MetaInfo>
                               </Stack>
-                            </SourcesContainer>
-                          </Box>
-                        </Stack>
-                      </ContentContainer>
-                    </StyledPaper>
-                  </Grid>
-                </Fade>
-              );
-            })}
-          </Grid>
+
+                              <SourcesContainer>
+                                <Stack direction="column" spacing={1}>
+                                  {/* Hauptquelle */}
+                                  {item.url && (
+                                    <SourceLink
+                                      href={item.url}
+                                      onClick={(e) => handleSourceClick(item.url, e)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <SourceIcon />
+                                      <Box component="span" sx={{ flexGrow: 1 }}>
+                                        {item.source_name || 'Original Source'}
+                                      </Box>
+                                      <OpenInNewIcon />
+                                    </SourceLink>
+                                  )}
+                                  
+                                  {/* Alternative URL */}
+                                  {item.source_url && item.source_url !== item.url && (
+                                    <SourceLink
+                                      href={item.source_url}
+                                      onClick={(e) => handleSourceClick(item.source_url, e)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <SourceIcon />
+                                      <Box component="span" sx={{ flexGrow: 1 }}>
+                                        {item.source_name || 'Alternative Source'}
+                                      </Box>
+                                      <OpenInNewIcon />
+                                    </SourceLink>
+                                  )}
+
+                                  {/* Link */}
+                                  {item.link && item.link !== item.url && item.link !== item.source_url && (
+                                    <SourceLink
+                                      href={item.link}
+                                      onClick={(e) => handleSourceClick(item.link, e)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <SourceIcon />
+                                      <Box component="span" sx={{ flexGrow: 1 }}>
+                                        {item.link_name || 'Related Link'}
+                                      </Box>
+                                      <OpenInNewIcon />
+                                    </SourceLink>
+                                  )}
+
+                                  {/* Zusätzliche Quellen */}
+                                  {item.additional_sources?.map((source, idx) => (
+                                    <SourceLink
+                                      key={idx}
+                                      href={source.url}
+                                      onClick={(e) => handleSourceClick(source.url, e)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <SourceIcon />
+                                      <Box component="span" sx={{ flexGrow: 1 }}>
+                                        {source.name || `Additional Source ${idx + 1}`}
+                                      </Box>
+                                      <OpenInNewIcon />
+                                    </SourceLink>
+                                  ))}
+                                </Stack>
+                              </SourcesContainer>
+                            </Box>
+                          </Stack>
+                        </ContentContainer>
+                      </StyledPaper>
+                    </Grid>
+                  </Fade>
+                );
+              })}
+            </Grid>
+            
+            {totalPages > 1 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                mt: 4,
+                pb: 2
+              }}>
+                <Pagination 
+                  count={totalPages} 
+                  page={page} 
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                      backdropFilter: 'blur(8px)',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        '&:hover': {
+                          backgroundColor: theme.palette.primary.dark,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            )}
+          </>
         )}
       </Container>
     </Box>
