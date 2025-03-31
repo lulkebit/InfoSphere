@@ -1,0 +1,18 @@
+ERROR 2025-03-31 13:38:07,101 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,107 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,114 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,115 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,120 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,125 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,131 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,137 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,143 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,149 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,155 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+ERROR 2025-03-31 13:38:07,161 fetch_news 2960 3636 Error processing article: module 'django.utils.timezone' has no attribute 'utc'
+INFO 2025-03-31 13:40:35,828 middleware 8244 6420 Starting scheduled news refresh...
+INFO 2025-03-31 13:40:35,828 middleware 8244 10760 News refresh thread started
+INFO 2025-03-31 13:40:36,494 middleware 8244 6420 Scheduled news refresh completed at 2025-03-31 11:40:35
+INFO 2025-03-31 13:41:54,115 middleware 11224 19596 Starting scheduled news refresh...
+INFO 2025-03-31 13:41:54,115 middleware 11224 17324 News refresh thread started
+INFO 2025-03-31 13:41:54,803 middleware 11224 19596 Scheduled news refresh completed at 2025-03-31 11:41:54

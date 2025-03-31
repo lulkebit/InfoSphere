@@ -5,9 +5,19 @@ from .models import News, Category, Source, Comment, Bookmark
 from django.contrib import messages
 from django.utils import timezone
 from django.core.paginator import Paginator
+from django.core.management import call_command
 
 def home(request):
     """Home page view displaying latest news."""
+    # Check if refresh_news parameter is present and user is staff
+    if request.GET.get('refresh_news') and request.user.is_staff:
+        try:
+            # Call the fetch_news command
+            call_command('fetch_news')
+            messages.success(request, 'News successfully fetched from APIs!')
+        except Exception as e:
+            messages.error(request, f'Error fetching news: {str(e)}')
+    
     news_list = News.objects.select_related('source').prefetch_related('categories').order_by('-published_at')
     categories = Category.objects.all()
     
