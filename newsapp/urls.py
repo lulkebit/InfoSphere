@@ -10,4 +10,5 @@ urlpatterns = [
     path('preferences/', views.user_preferences, name='preferences'),
     path('categories/', views.categories, name='categories'),
     path('sources/', views.sources, name='sources'),
+    path('register/', views.register, name='register'),
 ] 

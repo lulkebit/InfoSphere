@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.core.management import call_command
+from django.contrib.auth.models import User
+from django.contrib.auth import login
 
 def home(request):
     """Home page view displaying latest news."""
@@ -180,3 +182,44 @@ def sources(request):
         'sources': sources,
     }
     return render(request, 'newsapp/sources.html', context)
+
+def register(request):
+    """Register a new user."""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
+        
+        # Validate form data
+        if not all([username, email, password, password_confirm]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'newsapp/register.html')
+        
+        if password != password_confirm:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'newsapp/register.html')
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'newsapp/register.html')
+        
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'newsapp/register.html')
+        
+        # Create new user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        
+        # Log the user in
+        login(request, user)
+        messages.success(request, f'Account created successfully! Welcome, {username}!')
+        return redirect('home')
+    
+    return render(request, 'newsapp/register.html')
