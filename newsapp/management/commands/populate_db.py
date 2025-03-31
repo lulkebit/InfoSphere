@@ -221,7 +221,7 @@ class Command(BaseCommand):
             news, created = News.objects.get_or_create(
                 title=article_data['title'],
                 defaults={
-                    'content': article_data['content'],
+                    'content': self.clean_content(article_data['content']),
                     'author': article_data['author'],
                     'image_url': article_data['image_url'],
                     'published_at': published_date,
@@ -261,4 +261,10 @@ class Command(BaseCommand):
                     self.stdout.write(f'  - Bookmarked by {test_user.username}')
         
         self.stdout.write(self.style.SUCCESS('Database successfully populated!'))
-        self.stdout.write(self.style.SUCCESS('Login with username: testuser and password: testpassword')) 
+        self.stdout.write(self.style.SUCCESS('Login with username: testuser and password: testpassword'))
+        
+    def clean_content(self, content):
+        """Remove the truncation marker from content if present."""
+        import re
+        # Remove [+1234 chars] pattern from the end of content
+        return re.sub(r'\s*\[\+\d+ chars\]$', '', content) 

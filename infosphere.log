@@ -37,3 +37,9 @@ INFO 2025-03-31 14:24:16,762 middleware 15828 19448 Scheduled news refresh compl
 INFO 2025-03-31 14:26:16,886 middleware 13056 17028 Starting scheduled news refresh...
 INFO 2025-03-31 14:26:16,886 middleware 13056 11484 News refresh thread started
 INFO 2025-03-31 14:26:17,306 middleware 13056 17028 Scheduled news refresh completed at 2025-03-31 12:26:16
+INFO 2025-03-31 14:29:31,294 middleware 14364 13024 Starting scheduled news refresh...
+INFO 2025-03-31 14:29:31,294 middleware 14364 2000 News refresh thread started
+INFO 2025-03-31 14:29:31,736 middleware 14364 13024 Scheduled news refresh completed at 2025-03-31 12:29:31
+INFO 2025-03-31 14:30:00,032 middleware 17308 13952 Starting scheduled news refresh...
+INFO 2025-03-31 14:30:00,032 middleware 17308 17844 News refresh thread started
+INFO 2025-03-31 14:30:00,459 middleware 17308 13952 Scheduled news refresh completed at 2025-03-31 12:30:00

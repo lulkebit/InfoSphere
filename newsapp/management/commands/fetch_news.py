@@ -162,7 +162,7 @@ class Command(BaseCommand):
                 news, created = News.objects.get_or_create(
                     title=article.get("title", "Untitled"),
                     defaults={
-                        "content": article.get("content") or article.get("description", "No content available"),
+                        "content": self.clean_content(article.get("content") or article.get("description", "No content available")),
                         "author": article.get("author", "Unknown"),
                         "image_url": article.get("urlToImage", ""),
                         "published_at": published_at,
@@ -258,7 +258,7 @@ class Command(BaseCommand):
                     url=article.get("url", ""),
                     defaults={
                         "title": article.get("title", "Untitled"),
-                        "content": article.get("content") or article.get("description", "No content available"),
+                        "content": self.clean_content(article.get("content") or article.get("description", "No content available")),
                         "author": "GNews",  # GNews API doesn't provide author
                         "image_url": article.get("image", ""),
                         "published_at": published_at,
@@ -469,3 +469,9 @@ class Command(BaseCommand):
                 }
             }
         ] 
+
+    def clean_content(self, content):
+        """Remove the truncation marker from content if present."""
+        import re
+        # Remove [+1234 chars] pattern from the end of content
+        return re.sub(r'\s*\[\+\d+ chars\]$', '', content) 

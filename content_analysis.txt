@@ -1,0 +1,52 @@
+Sample content lengths:
+1. New AI Algorithm Achieves Breakthrough in Protein Folding (475 chars)
+2. Global Climate Summit Reaches Historic Agreement (505 chars)
+3. Major Tech Companies Announce Joint Quantum Computing Initiative (518 chars)
+4. New Educational Policy Aims to Bridge Digital Divide (476 chars)
+5. Breakthrough in Renewable Energy Storage Announced (519 chars)
+6. International Space Station Begins New Research Mission (495 chars)
+7. Global Economic Forum Predicts Strong Recovery (497 chars)
+8. New Treatment Shows Promise for Alzheimer's Disease (538 chars)
+9. Major Sports League Announces Expansion Teams (507 chars)
+10. Award-Winning Film Director Announces New Project (504 chars)
+
+Content Length Statistics:
+Total articles: 86
+Articles with short content (<200 chars): 1 (1.2%)
+Articles with longer content: 85 (98.8%)
+
+Full content of external API articles (up to 5):
+
+1. Global Climate Summit Reaches Historic Agreement (Source: BBC News)
+Length: 505 chars
+Content:
+World leaders have reached a landmark agreement at the Global Climate Summit to reduce 
+                carbon emissions by 50% by 2030. The agreement, signed by 195 countries, represents the most ambitious 
+                climate action plan to date. "This is a historic day for our planet," said UN Secretary-General in his 
+                closing speech. Experts say the implementation of the agreement will require significant changes in 
+                energy production and consumption worldwide.
+
+2. Global Economic Forum Predicts Strong Recovery (Source: BBC News)
+Length: 497 chars
+Content:
+The Global Economic Forum has released its annual forecast, predicting a stronger than 
+                expected economic recovery in the coming year. The report cites increased consumer spending and 
+                infrastructure investments as key factors. "While challenges remain, the overall trajectory is positive," 
+                said the Forum's chief economist. The forecast particularly highlights growth opportunities in the 
+                green energy sector and digital services.
+
+3. Laura Kuenssberg: For Justin Welby, anonymity may not be his to choose (Source: BBC News)
+Length: 200 chars
+Content:
+Could the Church split? That would be a "tragedy", he says. Isn't there a cost to the compromise to preserve the organisation? Unity takes priority, he says. "We disagree amongst each other but that …
+
+4. Trump tariffs: The US firms welcoming the fight on trade (Source: BBC News)
+Length: 200 chars
+Content:
+The mismatch between the blunt tool of tariffs and the more niche issues firms want the White House to champion has led to a delicate dance, as businesses suggest tariffs in their own interest, while…
+
+5. Kate says nature is family's 'sanctuary'  in Mother's Day message (Source: BBC News)
+Length: 200 chars
+Content:
+Kate wrote: "Over the past year, nature has been our sanctuary.
+"This Mother's Day, let us celebrate Mother Nature and recognise how our bond with the natural world can help not only nurture our inn…
