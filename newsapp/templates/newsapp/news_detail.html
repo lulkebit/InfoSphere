@@ -1,0 +1,145 @@
+{% extends 'newsapp/base.html' %}
+
+{% block title %}{{ news.title }} | InfoSphere{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                {% for category in news.categories.all %}
+                <li class="breadcrumb-item"><a href="{% url 'home' %}?category={{ category.id }}">{{ category.name }}</a></li>
+                {% endfor %}
+                <li class="breadcrumb-item active" aria-current="page">{{ news.title|truncatechars:30 }}</li>
+            </ol>
+        </nav>
+
+        <article class="mb-5">
+            <header class="mb-4">
+                <h1 class="fw-bold">{{ news.title }}</h1>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="text-muted">
+                            <i class="bi bi-person"></i> {% if news.author %}{{ news.author }}{% else %}Unknown{% endif %}
+                        </span>
+                        <span class="text-muted ms-3">
+                            <i class="bi bi-calendar3"></i> {{ news.published_at|date:"F d, Y" }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary">{{ news.source.name }}</span>
+                        {% for category in news.categories.all %}
+                        <span class="badge bg-secondary ms-1">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
+                <div class="mb-3">
+                    <a href="{% url 'toggle_bookmark' news.id %}" class="btn btn-sm {% if is_bookmarked %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                        <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i> 
+                        {% if is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+                    </a>
+                </div>
+                {% endif %}
+            </header>
+
+            {% if news.image_url %}
+            <div class="mb-4 text-center">
+                <img src="{{ news.image_url }}" alt="{{ news.title }}" class="img-fluid rounded">
+            </div>
+            {% endif %}
+
+            <div class="news-content mb-4">
+                <p>{{ news.content|linebreaks }}</p>
+            </div>
+
+            <footer class="border-top pt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Source:</strong> <a href="{{ news.source.website_url }}" target="_blank">{{ news.source.name }}</a>
+                        {% if news.url %}
+                        <a href="{{ news.url }}" target="_blank" class="btn btn-sm btn-primary ms-2">
+                            <i class="bi bi-box-arrow-up-right"></i> Original Article
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <small class="text-muted">Last updated: {{ news.updated_at|date:"F d, Y H:i" }}</small>
+                    </div>
+                </div>
+            </footer>
+        </article>
+
+        <!-- Comments Section -->
+        <section class="comments-section mb-4">
+            <h3 class="border-bottom pb-2">Comments ({{ comments.count }})</h3>
+            
+            {% if user.is_authenticated %}
+            <form action="{% url 'add_comment' news.id %}" method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="commentContent" class="form-label">Add a comment</label>
+                    <textarea class="form-control" id="commentContent" name="content" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            {% else %}
+            <div class="alert alert-info">
+                <a href="{% url 'login' %}">Login</a> to add a comment.
+            </div>
+            {% endif %}
+            
+            <div class="comments-list">
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <i class="bi bi-person-circle"></i> {{ comment.user.username }}
+                                <small class="ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                            </h6>
+                            <p class="card-text">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-light">
+                        No comments yet. Be the first to comment!
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">About the Source</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ news.source.name }}</h5>
+                <p><strong>Country:</strong> {{ news.source.country }}</p>
+                <a href="{{ news.source.website_url }}" class="btn btn-outline-primary" target="_blank">
+                    <i class="bi bi-globe"></i> Visit Website
+                </a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Share</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-around fs-4">
+                    <a href="#" class="text-primary"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-info"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-success"><i class="bi bi-whatsapp"></i></a>
+                    <a href="#" class="text-secondary"><i class="bi bi-envelope"></i></a>
+                    <a href="#" class="text-danger"><i class="bi bi-pinterest"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,132 @@
+{% extends 'newsapp/base.html' %}
+
+{% block title %}InfoSphere - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar filters -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Filters</h5>
+            </div>
+            <div class="card-body">
+                <h6>Categories</h6>
+                <div class="list-group mb-3">
+                    <a href="{% url 'home' %}" class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
+                        All Categories
+                    </a>
+                    {% for category in categories %}
+                    <a href="{% url 'home' %}?category={{ category.id }}" class="list-group-item list-group-item-action {% if selected_category|stringformat:'s' == category.id|stringformat:'s' %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <h6>Sources</h6>
+                <div class="list-group">
+                    <a href="{% url 'home' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" 
+                       class="list-group-item list-group-item-action {% if not selected_source %}active{% endif %}">
+                        All Sources
+                    </a>
+                    {% for source in sources %}
+                    <a href="{% url 'home' %}?source={{ source.id }}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
+                       class="list-group-item list-group-item-action {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}active{% endif %}">
+                        {{ source.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9">
+        {% if query %}
+        <div class="alert alert-info mb-4">
+            <h4>Search results for: "{{ query }}"</h4>
+        </div>
+        {% endif %}
+
+        {% if news_items %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for news in news_items %}
+                <div class="col">
+                    <div class="card h-100 news-card">
+                        {% if news.image_url %}
+                        <img src="{{ news.image_url }}" class="card-img-top" alt="{{ news.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light text-center py-5">
+                            <i class="bi bi-newspaper display-4"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ news.title }}</h5>
+                            <p class="card-text">{{ news.content|truncatewords:25 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ news.published_at|date:"M d, Y" }}</small>
+                                <span class="badge bg-primary">{{ news.source.name }}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% for category in news.categories.all %}
+                                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-primary">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if news_items.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if news_items.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ news_items.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in news_items.paginator.page_range %}
+                    <li class="page-item {% if news_items.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if news_items.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ news_items.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning">
+                <h4 class="alert-heading">No news found!</h4>
+                <p>There are no news articles matching your criteria. Please try different filters or check back later.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,46 @@
+{% extends 'newsapp/base.html' %}
+
+{% block title %}News Sources | InfoSphere{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">News Sources</h4>
+            </div>
+            <div class="card-body">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for source in sources %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ source.name }}</h5>
+                                <p class="card-text">
+                                    <span class="badge bg-secondary">{{ source.country }}</span>
+                                    <span class="badge bg-primary ms-1">{{ source.news_count }} Articles</span>
+                                </p>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'home' %}?source={{ source.id }}" class="btn btn-outline-primary">
+                                        View Articles
+                                    </a>
+                                    <a href="{{ source.website_url }}" target="_blank" class="btn btn-outline-secondary">
+                                        <i class="bi bi-box-arrow-up-right"></i> Visit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            No sources available. Check back later.
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

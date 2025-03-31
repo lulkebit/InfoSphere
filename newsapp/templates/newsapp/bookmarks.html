@@ -1,0 +1,65 @@
+{% extends 'newsapp/base.html' %}
+
+{% block title %}My Bookmarks | InfoSphere{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">My Bookmarked News</h4>
+            </div>
+            <div class="card-body">
+                {% if bookmarked_news %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Source</th>
+                                <th>Published On</th>
+                                <th>Categories</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for news in bookmarked_news %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'news_detail' news.id %}">{{ news.title }}</a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ news.source.name }}</span>
+                                </td>
+                                <td>{{ news.published_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% for category in news.categories.all %}
+                                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{% url 'toggle_bookmark' news.id %}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-bookmark-x"></i> Remove
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">No bookmarks yet!</h5>
+                    <p>You haven't bookmarked any news articles yet. Browse news and click the bookmark button to save articles for later reading.</p>
+                    <hr>
+                    <a href="{% url 'home' %}" class="btn btn-primary">Browse News</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
