@@ -30,9 +30,9 @@
                             </button>
                             
                             <!-- Hidden inputs to maintain filter state -->
-                            {% if selected_source %}
-                                <input type="hidden" name="source" value="{{ selected_source }}">
-                            {% endif %}
+                            {% for source_id in selected_sources %}
+                                <input type="hidden" name="sources" value="{{ source_id }}">
+                            {% endfor %}
                             
                             {% for category_id in selected_categories %}
                                 <input type="hidden" name="categories" value="{{ category_id }}">
@@ -41,7 +41,7 @@
                     </div>
                     
                     <!-- Active filters section -->
-                    {% if selected_categories or selected_source or query %}
+                    {% if selected_categories or selected_sources or query %}
                     <div class="mb-4">
                         <h6 class="text-muted small text-uppercase mb-2">Active Filters</h6>
                         <div class="d-flex flex-wrap gap-2">
@@ -67,20 +67,20 @@
                                 {% endfor %}
                             {% endfor %}
                             
-                            {% if selected_source %}
-                            <div class="badge bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center">
+                            {% for source_id in selected_sources %}
                                 {% for source in sources %}
-                                    {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}
-                                    <span>Source: {{ source.name }}</span>
+                                    {% if source_id == source.id|stringformat:'s' %}
+                                    <div class="badge bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center">
+                                        <span>Source: {{ source.name }}</span>
+                                        <a href="#" onclick="removeSourceFilter(event, '{{ source.id }}')" class="ms-2 text-primary text-decoration-none">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    </div>
                                     {% endif %}
                                 {% endfor %}
-                                <a href="#" onclick="removeSourceFilter(event)" class="ms-2 text-primary text-decoration-none">
-                                    <i class="bi bi-x-circle"></i>
-                                </a>
-                            </div>
-                            {% endif %}
+                            {% endfor %}
                             
-                            {% if selected_categories or selected_source or query %}
+                            {% if selected_categories or selected_sources or query %}
                             <a href="{% url 'home' %}" class="badge bg-danger bg-opacity-10 text-danger p-2 text-decoration-none">
                                 <i class="bi bi-trash me-1"></i> Clear All
                             </a>
@@ -89,29 +89,27 @@
                     </div>
                     {% endif %}
                     
-                    <!-- Filter form -->
+                    <!-- Main filter form -->
                     <form action="{% url 'home' %}" method="get" id="filterForm">
                         <!-- Keep search query if present -->
                         {% if query %}
                             <input type="hidden" name="q" value="{{ query }}">
                         {% endif %}
                         
-                        <!-- Keep source if selected -->
-                        {% if selected_source %}
-                            <input type="hidden" name="source" value="{{ selected_source }}">
-                        {% endif %}
-                        
-                        <!-- Categories accordion -->
-                        <div class="accordion mb-4" id="categoriesAccordion">
+                        <!-- Categories filter accordion -->
+                        <div class="accordion mb-3" id="filterAccordion">
                             <div class="accordion-item border-0 glass-card mb-3 overflow-hidden">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button rounded-3 collapsed bg-transparent" type="button" 
-                                            data-bs-toggle="collapse" data-bs-target="#categoriesCollapse" aria-expanded="false">
+                                            data-bs-toggle="collapse" data-bs-target="#categoriesCollapse" aria-expanded="true">
                                         <i class="bi bi-tag me-2 text-primary"></i>
                                         <span class="fw-semibold">Categories</span>
+                                        {% if selected_categories %}
+                                            <span class="badge bg-primary rounded-pill ms-2">{{ selected_categories|length }}</span>
+                                        {% endif %}
                                     </button>
                                 </h2>
-                                <div id="categoriesCollapse" class="accordion-collapse collapse show" data-bs-parent="#categoriesAccordion">
+                                <div id="categoriesCollapse" class="accordion-collapse collapse show" data-bs-parent="#filterAccordion">
                                     <div class="accordion-body p-3 pt-0">
                                         <!-- Option to select all or none -->
                                         <div class="d-flex justify-content-between mb-2">
@@ -134,64 +132,62 @@
                                             </div>
                                             {% endfor %}
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sources filter accordion -->
+                            <div class="accordion-item border-0 glass-card mb-3 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button rounded-3 collapsed bg-transparent" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#sourcesCollapse" aria-expanded="true">
+                                        <i class="bi bi-broadcast me-2 text-primary"></i>
+                                        <span class="fw-semibold">Sources</span>
+                                        {% if selected_sources %}
+                                            <span class="badge bg-primary rounded-pill ms-2">{{ selected_sources|length }}</span>
+                                        {% endif %}
+                                    </button>
+                                </h2>
+                                <div id="sourcesCollapse" class="accordion-collapse collapse show" data-bs-parent="#filterAccordion">
+                                    <div class="accordion-body p-3 pt-0">
+                                        <!-- Option to select all or none -->
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" id="selectAllSources">
+                                                Select All
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" id="clearAllSources">
+                                                Clear All
+                                            </button>
+                                        </div>
                                         
-                                        <!-- Apply filter button -->
-                                        <button type="submit" class="btn btn-primary btn-sm w-100 mt-3 rounded-pill">
-                                            <i class="bi bi-funnel-fill me-2"></i>Apply Filters
-                                        </button>
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text bg-transparent border-end-0">
+                                                <i class="bi bi-search text-muted"></i>
+                                            </span>
+                                            <input type="text" id="sourceSearchInput" class="form-control border-start-0" placeholder="Search sources...">
+                                        </div>
+                                        
+                                        <div class="list-group list-group-flush" id="sourcesList">
+                                            {% for source in sources %}
+                                            <div class="form-check mb-2 source-item" data-source-name="{{ source.name|lower }}">
+                                                <input type="checkbox" name="sources" value="{{ source.id }}" class="form-check-input source-checkbox" 
+                                                       id="source-{{ source.id }}" {% if source.id|stringformat:'s' in selected_sources %}checked{% endif %}>
+                                                <label class="form-check-label d-flex align-items-center" for="source-{{ source.id }}">
+                                                    {{ source.name }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Apply filter button -->
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">
+                            <i class="bi bi-funnel-fill me-2"></i>Apply Filters
+                        </button>
                     </form>
-                    
-                    <!-- Sources accordion - Keep this outside the category filter form -->
-                    <div class="accordion mb-3" id="sourcesAccordion">
-                        <div class="accordion-item border-0 glass-card overflow-hidden">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button rounded-3 collapsed bg-transparent" type="button" 
-                                        data-bs-toggle="collapse" data-bs-target="#sourcesCollapse" aria-expanded="false">
-                                    <i class="bi bi-broadcast me-2 text-primary"></i>
-                                    <span class="fw-semibold">News Sources</span>
-                                </button>
-                            </h2>
-                            <div id="sourcesCollapse" class="accordion-collapse collapse show" data-bs-parent="#sourcesAccordion">
-                                <div class="accordion-body p-3 pt-0">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text bg-transparent border-end-0">
-                                            <i class="bi bi-search text-muted"></i>
-                                        </span>
-                                        <input type="text" id="sourceSearchInput" class="form-control border-start-0" placeholder="Search sources...">
-                                    </div>
-                                    
-                                    <div class="list-group list-group-flush" id="sourcesList">
-                                        <a href="#" onclick="selectSource(event, '')" 
-                                           class="list-group-item list-group-item-action border-0 bg-transparent {% if not selected_source %}text-primary fw-semibold{% endif %}">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2 {% if not selected_source %}opacity-100 text-primary{% else %}opacity-50{% endif %}">
-                                                    <i class="bi bi-check-circle-fill"></i>
-                                                </div>
-                                                All Sources
-                                            </div>
-                                        </a>
-                                        
-                                        {% for source in sources %}
-                                        <a href="#" onclick="selectSource(event, '{{ source.id }}')" 
-                                           class="list-group-item list-group-item-action border-0 bg-transparent {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}text-primary fw-semibold{% endif %} source-item"
-                                           data-source-name="{{ source.name|lower }}">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2 {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}opacity-100 text-primary{% else %}opacity-50{% endif %}">
-                                                    <i class="bi bi-check-circle-fill"></i>
-                                                </div>
-                                                {{ source.name }}
-                                            </div>
-                                        </a>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -257,7 +253,7 @@
                 <ul class="pagination justify-content-center">
                     {% if news_items.has_previous %}
                     <li class="page-item">
-                        <a class="page-link rounded-pill" href="?page={{ news_items.previous_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                        <a class="page-link rounded-pill" href="?page={{ news_items.previous_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% for source_id in selected_sources %}&sources={{ source_id }}{% endfor %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -269,7 +265,7 @@
 
                     {% for num in news_items.paginator.page_range %}
                     <li class="page-item {% if news_items.number == num %}active{% endif %}">
-                        <a class="page-link rounded-pill" href="?page={{ num }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        <a class="page-link rounded-pill" href="?page={{ num }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% for source_id in selected_sources %}&sources={{ source_id }}{% endfor %}{% if query %}&q={{ query }}{% endif %}">
                             {{ num }}
                         </a>
                     </li>
@@ -277,7 +273,7 @@
 
                     {% if news_items.has_next %}
                     <li class="page-item">
-                        <a class="page-link rounded-pill" href="?page={{ news_items.next_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                        <a class="page-link rounded-pill" href="?page={{ news_items.next_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% for source_id in selected_sources %}&sources={{ source_id }}{% endfor %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -347,48 +343,20 @@
                 checkbox.checked = false;
             });
         });
+        
+        // Source selection - Select All / Clear All
+        document.getElementById('selectAllSources').addEventListener('click', function() {
+            document.querySelectorAll('.source-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+        
+        document.getElementById('clearAllSources').addEventListener('click', function() {
+            document.querySelectorAll('.source-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
     });
-    
-    // Function to handle source selection
-    function selectSource(event, sourceId) {
-        event.preventDefault();
-        
-        // Create a form for source selection
-        const form = document.createElement('form');
-        form.method = 'GET';
-        form.action = '{% url 'home' %}';
-        
-        // Add source if not empty
-        if (sourceId) {
-            const sourceInput = document.createElement('input');
-            sourceInput.type = 'hidden';
-            sourceInput.name = 'source';
-            sourceInput.value = sourceId;
-            form.appendChild(sourceInput);
-        }
-        
-        // Add all selected categories
-        {% for category_id in selected_categories %}
-        const categoryInput{{ forloop.counter }} = document.createElement('input');
-        categoryInput{{ forloop.counter }}.type = 'hidden';
-        categoryInput{{ forloop.counter }}.name = 'categories';
-        categoryInput{{ forloop.counter }}.value = '{{ category_id }}';
-        form.appendChild(categoryInput{{ forloop.counter }});
-        {% endfor %}
-        
-        // Add search query if present
-        {% if query %}
-        const queryInput = document.createElement('input');
-        queryInput.type = 'hidden';
-        queryInput.name = 'q';
-        queryInput.value = '{{ query }}';
-        form.appendChild(queryInput);
-        {% endif %}
-        
-        // Submit the form
-        document.body.appendChild(form);
-        form.submit();
-    }
     
     // Function to remove search filter
     function removeSearchFilter(event) {
@@ -399,14 +367,14 @@
         form.method = 'GET';
         form.action = '{% url 'home' %}';
         
-        // Add source if present
-        {% if selected_source %}
-        const sourceInput = document.createElement('input');
-        sourceInput.type = 'hidden';
-        sourceInput.name = 'source';
-        sourceInput.value = '{{ selected_source }}';
-        form.appendChild(sourceInput);
-        {% endif %}
+        // Add all selected sources
+        {% for source_id in selected_sources %}
+        const sourceInput{{ forloop.counter }} = document.createElement('input');
+        sourceInput{{ forloop.counter }}.type = 'hidden';
+        sourceInput{{ forloop.counter }}.name = 'sources';
+        sourceInput{{ forloop.counter }}.value = '{{ source_id }}';
+        form.appendChild(sourceInput{{ forloop.counter }});
+        {% endfor %}
         
         // Add all selected categories
         {% for category_id in selected_categories %}
@@ -431,14 +399,14 @@
         form.method = 'GET';
         form.action = '{% url 'home' %}';
         
-        // Add source if present
-        {% if selected_source %}
-        const sourceInput = document.createElement('input');
-        sourceInput.type = 'hidden';
-        sourceInput.name = 'source';
-        sourceInput.value = '{{ selected_source }}';
-        form.appendChild(sourceInput);
-        {% endif %}
+        // Add all selected sources
+        {% for source_id in selected_sources %}
+        const sourceInput{{ forloop.counter }} = document.createElement('input');
+        sourceInput{{ forloop.counter }}.type = 'hidden';
+        sourceInput{{ forloop.counter }}.name = 'sources';
+        sourceInput{{ forloop.counter }}.value = '{{ source_id }}';
+        form.appendChild(sourceInput{{ forloop.counter }});
+        {% endfor %}
         
         // Add all selected categories except the one being removed
         {% for category_id in selected_categories %}
@@ -466,13 +434,24 @@
     }
     
     // Function to remove source filter
-    function removeSourceFilter(event) {
+    function removeSourceFilter(event, sourceId) {
         event.preventDefault();
         
         // Create form and keep all other filters
         const form = document.createElement('form');
         form.method = 'GET';
         form.action = '{% url 'home' %}';
+        
+        // Add all selected sources except the one being removed
+        {% for source_id in selected_sources %}
+        if ('{{ source_id }}' !== sourceId) {
+            const sourceInput = document.createElement('input');
+            sourceInput.type = 'hidden';
+            sourceInput.name = 'sources';
+            sourceInput.value = '{{ source_id }}';
+            form.appendChild(sourceInput);
+        }
+        {% endfor %}
         
         // Add all selected categories
         {% for category_id in selected_categories %}

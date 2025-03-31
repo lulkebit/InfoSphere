@@ -28,6 +28,7 @@ def home(request):
         # If multi_select is true, we want to preserve existing selected categories
         # from the referer URL (if any) and add the new one
         selected_categories = request.GET.getlist('categories', [])
+        selected_sources = request.GET.getlist('sources', [])
         referer = request.META.get('HTTP_REFERER', '')
         
         # Create redirect URL with all selected categories
@@ -38,10 +39,9 @@ def home(request):
         for category in selected_categories:
             params.append(f'categories={category}')
         
-        # Add source if present
-        source_id = request.GET.get('source')
-        if source_id:
-            params.append(f'source={source_id}')
+        # Add all sources
+        for source in selected_sources:
+            params.append(f'sources={source}')
         
         # Add search query if present
         query = request.GET.get('q')
@@ -59,10 +59,10 @@ def home(request):
     if selected_categories:
         news_list = news_list.filter(categories__id__in=selected_categories).distinct()
     
-    # Filter by source if specified
-    source_id = request.GET.get('source')
-    if source_id:
-        news_list = news_list.filter(source_id=source_id)
+    # Filter by multiple sources if specified
+    selected_sources = request.GET.getlist('sources')
+    if selected_sources:
+        news_list = news_list.filter(source__id__in=selected_sources)
     
     # Search functionality
     query = request.GET.get('q')
@@ -85,7 +85,7 @@ def home(request):
         'categories': categories,
         'sources': sources,
         'selected_categories': selected_categories,
-        'selected_source': source_id,
+        'selected_sources': selected_sources,
         'query': query,
     }
     return render(request, 'newsapp/home.html', context)
