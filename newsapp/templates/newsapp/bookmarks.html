@@ -5,11 +5,14 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="card-title mb-0">My Bookmarked News</h4>
+        <div class="glass-card overflow-hidden">
+            <div class="p-4 bg-primary bg-opacity-90 text-white">
+                <h4 class="mb-0 fw-semibold d-flex align-items-center">
+                    <i class="bi bi-bookmark-heart me-2"></i>
+                    My Bookmarked News
+                </h4>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 {% if bookmarked_news %}
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -26,24 +29,31 @@
                             {% for news in bookmarked_news %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'news_detail' news.id %}">{{ news.title }}</a>
+                                    <a href="{% url 'news_detail' news.id %}" class="text-decoration-none fw-semibold">{{ news.title }}</a>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary">{{ news.source.name }}</span>
+                                    <span class="badge bg-primary rounded-pill">{{ news.source.name }}</span>
                                 </td>
-                                <td>{{ news.published_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-calendar3 text-primary me-2"></i>
+                                        {{ news.published_at|date:"M d, Y" }}
+                                    </div>
+                                </td>
                                 <td>
                                     {% for category in news.categories.all %}
-                                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-1 rounded-pill">{{ category.name }}</span>
                                     {% endfor %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i> View
-                                    </a>
-                                    <a href="{% url 'toggle_bookmark' news.id %}" class="btn btn-sm btn-warning">
-                                        <i class="bi bi-bookmark-x"></i> Remove
-                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="bi bi-eye me-1"></i> View
+                                        </a>
+                                        <a href="{% url 'toggle_bookmark' news.id %}" class="btn btn-sm btn-warning rounded-pill">
+                                            <i class="bi bi-bookmark-x me-1"></i> Remove
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -51,11 +61,13 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="alert alert-info">
-                    <h5 class="alert-heading">No bookmarks yet!</h5>
-                    <p>You haven't bookmarked any news articles yet. Browse news and click the bookmark button to save articles for later reading.</p>
-                    <hr>
-                    <a href="{% url 'home' %}" class="btn btn-primary">Browse News</a>
+                <div class="glass-card p-5 text-center bg-opacity-50">
+                    <i class="bi bi-bookmark text-primary opacity-25 display-1 mb-3"></i>
+                    <h5 class="fw-semibold mb-3">No bookmarks yet!</h5>
+                    <p class="mb-4">You haven't bookmarked any news articles yet. Browse news and click the bookmark button to save articles for later reading.</p>
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg rounded-pill">
+                        <i class="bi bi-newspaper me-2"></i>Browse News
+                    </a>
                 </div>
                 {% endif %}
             </div>

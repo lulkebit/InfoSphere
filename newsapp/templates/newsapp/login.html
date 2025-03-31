@@ -5,36 +5,50 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="card-title mb-0">Login</h4>
+        <div class="glass-card overflow-hidden">
+            <div class="p-4 bg-primary bg-opacity-90 text-white text-center">
+                <i class="bi bi-person-circle display-4 mb-3"></i>
+                <h4 class="mb-0">Welcome Back</h4>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <form method="post">
                     {% csrf_token %}
                     
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="id_username" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" id="id_username" placeholder="Enter your username" required>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="bi bi-person text-muted"></i>
+                            </span>
+                            <input type="text" name="username" class="form-control border-start-0" id="id_username" placeholder="Enter your username" required>
+                        </div>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="id_password" class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" id="id_password" placeholder="Enter your password" required>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0">
+                                <i class="bi bi-lock text-muted"></i>
+                            </span>
+                            <input type="password" name="password" class="form-control border-start-0" id="id_password" placeholder="Enter your password" required>
+                        </div>
                     </div>
                     
                     {% if form.errors %}
-                    <div class="alert alert-danger">
-                        <p>Your username and password didn't match. Please try again.</p>
+                    <div class="alert alert-danger bg-danger bg-opacity-10 text-danger border-0 mb-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span>Your username and password didn't match. Please try again.</span>
                     </div>
                     {% endif %}
                     
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
                     </div>
                     
-                    <div class="mt-3 text-center">
-                        <p>Don't have an account? <a href="{% url 'register' %}">Register</a></p>
+                    <div class="text-center">
+                        <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="text-primary text-decoration-none fw-semibold">Register</a></p>
                     </div>
                 </form>
             </div>

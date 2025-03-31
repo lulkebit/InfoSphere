@@ -2,42 +2,99 @@
 
 {% block title %}{{ news.title }} | InfoSphere{% endblock %}
 
+{% block extra_styles %}
+<style>
+    .article-header {
+        position: relative;
+        margin-bottom: 3rem;
+    }
+    
+    .article-image-container {
+        border-radius: 16px;
+        overflow: hidden;
+        max-height: 450px;
+    }
+    
+    .article-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .article-meta {
+        margin-top: 1.5rem;
+    }
+    
+    .news-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+    }
+    
+    .news-content p {
+        margin-bottom: 1.5rem;
+    }
+    
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .pill-badge {
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <nav aria-label="breadcrumb">
+<div class="row g-4">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
                 {% for category in news.categories.all %}
-                <li class="breadcrumb-item"><a href="{% url 'home' %}?category={{ category.id }}">{{ category.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'home' %}?category={{ category.id }}" class="text-decoration-none">{{ category.name }}</a></li>
                 {% endfor %}
                 <li class="breadcrumb-item active" aria-current="page">{{ news.title|truncatechars:30 }}</li>
             </ol>
         </nav>
 
-        <article class="mb-5">
-            <header class="mb-4">
-                <h1 class="fw-bold">{{ news.title }}</h1>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <span class="text-muted">
-                            <i class="bi bi-person"></i> {% if news.author %}{{ news.author }}{% else %}Unknown{% endif %}
+        <article class="glass-card p-4 mb-4">
+            <header class="article-header">
+                <h1 class="fw-bold mb-4">{{ news.title }}</h1>
+                
+                <div class="article-meta d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="me-3 d-flex align-items-center">
+                            <i class="bi bi-person-circle me-2 text-primary"></i>
+                            <span>{% if news.author %}{{ news.author }}{% else %}Unknown{% endif %}</span>
                         </span>
-                        <span class="text-muted ms-3">
-                            <i class="bi bi-calendar3"></i> {{ news.published_at|date:"F d, Y" }}
+                        <span class="d-flex align-items-center">
+                            <i class="bi bi-calendar3 me-2 text-primary"></i>
+                            <span>{{ news.published_at|date:"F d, Y" }}</span>
                         </span>
                     </div>
-                    <div>
-                        <span class="badge bg-primary">{{ news.source.name }}</span>
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-1 pill-badge">{{ news.source.name }}</span>
                         {% for category in news.categories.all %}
-                        <span class="badge bg-secondary ms-1">{{ category.name }}</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary me-1 pill-badge">{{ category.name }}</span>
                         {% endfor %}
                     </div>
                 </div>
+                
                 {% if user.is_authenticated %}
-                <div class="mb-3">
-                    <a href="{% url 'toggle_bookmark' news.id %}" class="btn btn-sm {% if is_bookmarked %}btn-warning{% else %}btn-outline-warning{% endif %}">
-                        <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i> 
+                <div class="mb-4">
+                    <a href="{% url 'toggle_bookmark' news.id %}" class="btn {% if is_bookmarked %}btn-warning{% else %}btn-outline-warning{% endif %} rounded-pill">
+                        <i class="bi {% if is_bookmarked %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} me-2"></i> 
                         {% if is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
                     </a>
                 </div>
@@ -45,8 +102,8 @@
             </header>
 
             {% if news.image_url %}
-            <div class="mb-4 text-center">
-                <img src="{{ news.image_url }}" alt="{{ news.title }}" class="img-fluid rounded">
+            <div class="article-image-container mb-4">
+                <img src="{{ news.image_url }}" alt="{{ news.title }}" class="article-image">
             </div>
             {% endif %}
 
@@ -54,26 +111,32 @@
                 <p>{{ news.content|linebreaks }}</p>
             </div>
 
-            <footer class="border-top pt-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Source:</strong> <a href="{{ news.source.website_url }}" target="_blank">{{ news.source.name }}</a>
+            <footer class="border-top pt-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="mb-3">
+                        <strong>Source:</strong> <a href="{{ news.source.website_url }}" target="_blank" class="text-decoration-none">{{ news.source.name }}</a>
                         {% if news.url %}
-                        <a href="{{ news.url }}" target="_blank" class="btn btn-sm btn-primary ms-2">
-                            <i class="bi bi-box-arrow-up-right"></i> Original Article
+                        <a href="{{ news.url }}" target="_blank" class="btn btn-primary btn-sm rounded-pill ms-2">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Original Article
                         </a>
                         {% endif %}
                     </div>
-                    <div>
-                        <small class="text-muted">Last updated: {{ news.updated_at|date:"F d, Y H:i" }}</small>
+                    <div class="mb-3">
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Last updated: {{ news.updated_at|date:"F d, Y H:i" }}
+                        </small>
                     </div>
                 </div>
             </footer>
         </article>
 
         <!-- Comments Section -->
-        <section class="comments-section mb-4">
-            <h3 class="border-bottom pb-2">Comments ({{ comments.count }})</h3>
+        <section class="glass-card p-4 mb-4">
+            <h3 class="fw-semibold mb-4 d-flex align-items-center">
+                <i class="bi bi-chat-square-text me-2 text-primary"></i>
+                Comments <span class="badge bg-primary bg-opacity-10 text-primary ms-2 rounded-pill">{{ comments.count }}</span>
+            </h3>
             
             {% if user.is_authenticated %}
             <form action="{% url 'add_comment' news.id %}" method="post" class="mb-4">
@@ -82,61 +145,98 @@
                     <label for="commentContent" class="form-label">Add a comment</label>
                     <textarea class="form-control" id="commentContent" name="content" rows="3" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary rounded-pill">
+                    <i class="bi bi-send me-2"></i>Submit Comment
+                </button>
             </form>
             {% else %}
-            <div class="alert alert-info">
-                <a href="{% url 'login' %}">Login</a> to add a comment.
+            <div class="glass-card bg-info bg-opacity-10 p-3 mb-4 border-0">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle text-info me-3 fs-4"></i>
+                    <div>
+                        <p class="mb-0">Please <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">login</a> to add a comment.</p>
+                    </div>
+                </div>
             </div>
             {% endif %}
             
             <div class="comments-list">
                 {% if comments %}
                     {% for comment in comments %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">
-                                <i class="bi bi-person-circle"></i> {{ comment.user.username }}
-                                <small class="ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</small>
-                            </h6>
-                            <p class="card-text">{{ comment.content }}</p>
+                    <div class="glass-card p-3 mb-3 border-0">
+                        <div class="d-flex">
+                            <div class="comment-avatar me-3">
+                                {{ comment.user.username|first|upper }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h6 class="mb-0 fw-semibold">{{ comment.user.username }}</h6>
+                                    <small class="text-muted d-flex align-items-center">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ comment.created_at|date:"M d, Y H:i" }}
+                                    </small>
+                                </div>
+                                <p class="mb-0">{{ comment.content }}</p>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="alert alert-light">
-                        No comments yet. Be the first to comment!
+                    <div class="glass-card p-4 text-center bg-opacity-50">
+                        <i class="bi bi-chat-square text-primary opacity-25 display-4 mb-3"></i>
+                        <p class="mb-0">No comments yet. Be the first to comment!</p>
                     </div>
                 {% endif %}
             </div>
         </section>
     </div>
 
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">About the Source</h5>
+    <div class="col-lg-4">
+        <div class="glass-card overflow-hidden mb-4">
+            <div class="p-3 bg-primary bg-opacity-90 text-white">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2"></i>About the Source</h5>
             </div>
-            <div class="card-body">
-                <h5>{{ news.source.name }}</h5>
-                <p><strong>Country:</strong> {{ news.source.country }}</p>
-                <a href="{{ news.source.website_url }}" class="btn btn-outline-primary" target="_blank">
-                    <i class="bi bi-globe"></i> Visit Website
+            <div class="p-4">
+                <h5 class="fw-bold mb-3">{{ news.source.name }}</h5>
+                <p class="d-flex align-items-center mb-4">
+                    <i class="bi bi-geo-alt me-2 text-primary"></i>
+                    <span><strong>Country:</strong> {{ news.source.country }}</span>
+                </p>
+                <a href="{{ news.source.website_url }}" class="btn btn-outline-primary rounded-pill w-100" target="_blank">
+                    <i class="bi bi-globe me-2"></i> Visit Website
                 </a>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Share</h5>
+        <div class="glass-card overflow-hidden mb-4">
+            <div class="p-3 bg-primary bg-opacity-90 text-white">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-share me-2"></i>Share</h5>
             </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-around fs-4">
+            <div class="p-4">
+                <div class="d-flex justify-content-between fs-3">
                     <a href="#" class="text-primary"><i class="bi bi-facebook"></i></a>
                     <a href="#" class="text-info"><i class="bi bi-twitter"></i></a>
                     <a href="#" class="text-success"><i class="bi bi-whatsapp"></i></a>
                     <a href="#" class="text-secondary"><i class="bi bi-envelope"></i></a>
                     <a href="#" class="text-danger"><i class="bi bi-pinterest"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="glass-card overflow-hidden">
+            <div class="p-3 bg-primary bg-opacity-90 text-white">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-lightning-charge me-2"></i>Related Tags</h5>
+            </div>
+            <div class="p-4">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for category in news.categories.all %}
+                    <a href="{% url 'home' %}?category={{ category.id }}" class="badge bg-primary bg-opacity-10 text-primary text-decoration-none pill-badge">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                    <a href="{% url 'home' %}?source={{ news.source.id }}" class="badge bg-primary text-decoration-none pill-badge">
+                        {{ news.source.name }}
+                    </a>
                 </div>
             </div>
         </div>

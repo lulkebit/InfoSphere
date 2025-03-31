@@ -5,30 +5,43 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="card-title mb-0">News Categories</h4>
+        <div class="glass-card overflow-hidden">
+            <div class="p-4 bg-primary bg-opacity-90 text-white">
+                <h4 class="mb-0 fw-semibold d-flex align-items-center">
+                    <i class="bi bi-tags me-2"></i>News Categories
+                </h4>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for category in categories %}
                     <div class="col">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ category.name }}</h5>
-                                <p class="card-text">
-                                    <span class="badge bg-primary">{{ category.news_count }} Articles</span>
+                        <div class="glass-card h-100">
+                            <div class="p-4">
+                                <h5 class="fw-bold mb-3">{{ category.name }}</h5>
+                                <p class="mb-4">
+                                    <span class="badge bg-primary rounded-pill">{{ category.news_count }} Articles</span>
                                 </p>
-                                <a href="{% url 'home' %}?category={{ category.id }}" class="btn btn-outline-primary">
-                                    View Articles
-                                </a>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'home' %}?categories={{ category.id }}" class="btn btn-primary rounded-pill">
+                                        <i class="bi bi-eye me-2"></i>View Articles
+                                    </a>
+                                    <form method="get" action="{% url 'home' %}" class="d-inline">
+                                        <input type="hidden" name="categories" value="{{ category.id }}">
+                                        <button type="submit" class="btn btn-outline-primary rounded-pill" name="multi_select" value="true">
+                                            <i class="bi bi-plus-circle me-1"></i>Add to Filter
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                     {% empty %}
                     <div class="col-12">
-                        <div class="alert alert-warning">
-                            No categories available. Check back later.
+                        <div class="glass-card p-4 text-center">
+                            <div class="py-4">
+                                <i class="bi bi-exclamation-triangle display-4 text-warning mb-3"></i>
+                                <h5 class="mb-0">No categories available. Check back later.</h5>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}

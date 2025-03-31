@@ -3,55 +3,212 @@
 {% block title %}InfoSphere - Home{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Sidebar filters -->
-    <div class="col-md-3 mb-4">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Filters</h5>
+<div class="row g-4">
+    <!-- Sidebar filters - redesigned with accordion and better UI -->
+    <div class="col-lg-3 mb-4">
+        <div class="glass-card overflow-hidden sticky-lg-top" style="top: 100px;">
+            <div class="p-3 bg-primary bg-opacity-90 text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold"><i class="bi bi-funnel me-2"></i>Filter News</h5>
+                <button class="btn btn-sm text-white d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
             </div>
-            <div class="card-body">
-                <h6>Categories</h6>
-                <div class="list-group mb-3">
-                    <a href="{% url 'home' %}" class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
-                        All Categories
-                    </a>
-                    {% for category in categories %}
-                    <a href="{% url 'home' %}?category={{ category.id }}" class="list-group-item list-group-item-action {% if selected_category|stringformat:'s' == category.id|stringformat:'s' %}active{% endif %}">
-                        {{ category.name }}
-                    </a>
-                    {% endfor %}
-                </div>
-
-                <h6>Sources</h6>
-                <div class="list-group">
-                    <a href="{% url 'home' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" 
-                       class="list-group-item list-group-item-action {% if not selected_source %}active{% endif %}">
-                        All Sources
-                    </a>
-                    {% for source in sources %}
-                    <a href="{% url 'home' %}?source={{ source.id }}{% if selected_category %}&category={{ selected_category }}{% endif %}" 
-                       class="list-group-item list-group-item-action {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}active{% endif %}">
-                        {{ source.name }}
-                    </a>
-                    {% endfor %}
+            
+            <div class="collapse d-lg-block" id="filterCollapse">
+                <div class="p-4">
+                    <!-- Search inside filter -->
+                    <div class="mb-4">
+                        <form action="{% url 'home' %}" method="get" class="d-flex align-items-center gap-2" id="searchForm">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="search" name="q" class="form-control border-start-0" placeholder="Search news..." value="{{ query|default:'' }}">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm rounded-circle">
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                            
+                            <!-- Hidden inputs to maintain filter state -->
+                            {% if selected_source %}
+                                <input type="hidden" name="source" value="{{ selected_source }}">
+                            {% endif %}
+                            
+                            {% for category_id in selected_categories %}
+                                <input type="hidden" name="categories" value="{{ category_id }}">
+                            {% endfor %}
+                        </form>
+                    </div>
+                    
+                    <!-- Active filters section -->
+                    {% if selected_categories or selected_source or query %}
+                    <div class="mb-4">
+                        <h6 class="text-muted small text-uppercase mb-2">Active Filters</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if query %}
+                            <div class="badge bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center">
+                                <span>Search: "{{ query }}"</span>
+                                <a href="#" onclick="removeSearchFilter(event)" class="ms-2 text-primary text-decoration-none">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% for category_id in selected_categories %}
+                                {% for category in categories %}
+                                    {% if category_id == category.id|stringformat:'s' %}
+                                    <div class="badge bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center">
+                                        <span>Category: {{ category.name }}</span>
+                                        <a href="#" onclick="removeCategoryFilter(event, '{{ category.id }}')" class="ms-2 text-primary text-decoration-none">
+                                            <i class="bi bi-x-circle"></i>
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            {% if selected_source %}
+                            <div class="badge bg-primary bg-opacity-10 text-primary p-2 d-flex align-items-center">
+                                {% for source in sources %}
+                                    {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}
+                                    <span>Source: {{ source.name }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                                <a href="#" onclick="removeSourceFilter(event)" class="ms-2 text-primary text-decoration-none">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if selected_categories or selected_source or query %}
+                            <a href="{% url 'home' %}" class="badge bg-danger bg-opacity-10 text-danger p-2 text-decoration-none">
+                                <i class="bi bi-trash me-1"></i> Clear All
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Filter form -->
+                    <form action="{% url 'home' %}" method="get" id="filterForm">
+                        <!-- Keep search query if present -->
+                        {% if query %}
+                            <input type="hidden" name="q" value="{{ query }}">
+                        {% endif %}
+                        
+                        <!-- Keep source if selected -->
+                        {% if selected_source %}
+                            <input type="hidden" name="source" value="{{ selected_source }}">
+                        {% endif %}
+                        
+                        <!-- Categories accordion -->
+                        <div class="accordion mb-4" id="categoriesAccordion">
+                            <div class="accordion-item border-0 glass-card mb-3 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button rounded-3 collapsed bg-transparent" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#categoriesCollapse" aria-expanded="false">
+                                        <i class="bi bi-tag me-2 text-primary"></i>
+                                        <span class="fw-semibold">Categories</span>
+                                    </button>
+                                </h2>
+                                <div id="categoriesCollapse" class="accordion-collapse collapse show" data-bs-parent="#categoriesAccordion">
+                                    <div class="accordion-body p-3 pt-0">
+                                        <!-- Option to select all or none -->
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" id="selectAllCategories">
+                                                Select All
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" id="clearAllCategories">
+                                                Clear All
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="list-group list-group-flush">
+                                            {% for category in categories %}
+                                            <div class="form-check mb-2">
+                                                <input type="checkbox" name="categories" value="{{ category.id }}" class="form-check-input category-checkbox" 
+                                                       id="category-{{ category.id }}" {% if category.id|stringformat:'s' in selected_categories %}checked{% endif %}>
+                                                <label class="form-check-label d-flex align-items-center" for="category-{{ category.id }}">
+                                                    {{ category.name }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <!-- Apply filter button -->
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 mt-3 rounded-pill">
+                                            <i class="bi bi-funnel-fill me-2"></i>Apply Filters
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Sources accordion - Keep this outside the category filter form -->
+                    <div class="accordion mb-3" id="sourcesAccordion">
+                        <div class="accordion-item border-0 glass-card overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button rounded-3 collapsed bg-transparent" type="button" 
+                                        data-bs-toggle="collapse" data-bs-target="#sourcesCollapse" aria-expanded="false">
+                                    <i class="bi bi-broadcast me-2 text-primary"></i>
+                                    <span class="fw-semibold">News Sources</span>
+                                </button>
+                            </h2>
+                            <div id="sourcesCollapse" class="accordion-collapse collapse show" data-bs-parent="#sourcesAccordion">
+                                <div class="accordion-body p-3 pt-0">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text bg-transparent border-end-0">
+                                            <i class="bi bi-search text-muted"></i>
+                                        </span>
+                                        <input type="text" id="sourceSearchInput" class="form-control border-start-0" placeholder="Search sources...">
+                                    </div>
+                                    
+                                    <div class="list-group list-group-flush" id="sourcesList">
+                                        <a href="#" onclick="selectSource(event, '')" 
+                                           class="list-group-item list-group-item-action border-0 bg-transparent {% if not selected_source %}text-primary fw-semibold{% endif %}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2 {% if not selected_source %}opacity-100 text-primary{% else %}opacity-50{% endif %}">
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                </div>
+                                                All Sources
+                                            </div>
+                                        </a>
+                                        
+                                        {% for source in sources %}
+                                        <a href="#" onclick="selectSource(event, '{{ source.id }}')" 
+                                           class="list-group-item list-group-item-action border-0 bg-transparent {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}text-primary fw-semibold{% endif %} source-item"
+                                           data-source-name="{{ source.name|lower }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2 {% if selected_source|stringformat:'s' == source.id|stringformat:'s' %}opacity-100 text-primary{% else %}opacity-50{% endif %}">
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                </div>
+                                                {{ source.name }}
+                                            </div>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main content -->
-    <div class="col-md-9">
+    <div class="col-lg-9">
         {% if query %}
-        <div class="alert alert-info mb-4">
-            <h4>Search results for: "{{ query }}"</h4>
+        <div class="glass-card p-3 mb-4">
+            <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search results for: <span class="text-primary">"{{ query }}"</span></h5>
         </div>
         {% endif %}
 
         {% if user.is_staff %}
         <div class="mb-4 text-end">
-            <a href="{% url 'home' %}?refresh_news=1" class="btn btn-primary">
-                <i class="bi bi-arrow-clockwise"></i> Refresh News from APIs
+            <a href="{% url 'home' %}?refresh_news=1" class="btn btn-primary rounded-pill">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh News
             </a>
         </div>
         {% endif %}
@@ -60,30 +217,33 @@
             <div class="row row-cols-1 row-cols-md-2 g-4">
                 {% for news in news_items %}
                 <div class="col">
-                    <div class="card h-100 news-card">
+                    <div class="glass-card h-100 overflow-hidden">
                         {% if news.image_url %}
                         <img src="{{ news.image_url }}" class="card-img-top" alt="{{ news.title }}" style="height: 200px; object-fit: cover;">
                         {% else %}
-                        <div class="bg-light text-center py-5">
-                            <i class="bi bi-newspaper display-4"></i>
+                        <div class="p-4 text-center">
+                            <i class="bi bi-newspaper text-primary" style="font-size: 5rem; opacity: 0.2;"></i>
                         </div>
                         {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title">{{ news.title }}</h5>
-                            <p class="card-text">{{ news.content|truncatewords:25 }}</p>
+                        <div class="p-4">
+                            <h5 class="card-title fw-bold mb-3">{{ news.title }}</h5>
+                            <p class="card-text mb-4 opacity-75">{{ news.content|truncatewords:25 }}</p>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% for category in news.categories.all %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">{{ news.published_at|date:"M d, Y" }}</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar3 text-muted"></i>
+                                    <small class="text-muted">{{ news.published_at|date:"M d, Y" }}</small>
+                                </div>
                                 <span class="badge bg-primary">{{ news.source.name }}</span>
                             </div>
-                        </div>
-                        <div class="card-footer">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    {% for category in news.categories.all %}
-                                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
-                                    {% endfor %}
-                                </div>
-                                <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-primary">Read More</a>
+                            <div class="mt-3 text-end">
+                                <a href="{% url 'news_detail' news.id %}" class="btn btn-sm btn-primary rounded-pill">
+                                    Read More <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -93,23 +253,23 @@
 
             <!-- Pagination -->
             {% if news_items.has_other_pages %}
-            <nav aria-label="Page navigation" class="mt-4">
+            <nav aria-label="Page navigation" class="mt-5">
                 <ul class="pagination justify-content-center">
                     {% if news_items.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ news_items.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                        <a class="page-link rounded-pill" href="?page={{ news_items.previous_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">&laquo;</span>
+                        <span class="page-link rounded-pill">&laquo;</span>
                     </li>
                     {% endif %}
 
                     {% for num in news_items.paginator.page_range %}
                     <li class="page-item {% if news_items.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                        <a class="page-link rounded-pill" href="?page={{ num }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}">
                             {{ num }}
                         </a>
                     </li>
@@ -117,24 +277,224 @@
 
                     {% if news_items.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ news_items.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                        <a class="page-link rounded-pill" href="?page={{ news_items.next_page_number }}{% for category_id in selected_categories %}&categories={{ category_id }}{% endfor %}{% if selected_source %}&source={{ selected_source }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
                     {% else %}
                     <li class="page-item disabled">
-                        <span class="page-link">&raquo;</span>
+                        <span class="page-link rounded-pill">&raquo;</span>
                     </li>
                     {% endif %}
                 </ul>
             </nav>
             {% endif %}
         {% else %}
-            <div class="alert alert-warning">
-                <h4 class="alert-heading">No news found!</h4>
-                <p>There are no news articles matching your criteria. Please try different filters or check back later.</p>
+            <div class="glass-card p-4 text-center">
+                <div class="py-5">
+                    <i class="bi bi-search display-1 text-primary opacity-25 mb-3"></i>
+                    <h4 class="mb-3">No news found</h4>
+                    <p class="text-muted mb-0">There are no news articles matching your criteria. Please try different filters or check back later.</p>
+                </div>
             </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add smooth hover animations
+        const newsCards = document.querySelectorAll('.glass-card');
+        newsCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.15)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'var(--glass-shadow)';
+            });
+        });
+        
+        // Source filter search functionality
+        const sourceSearchInput = document.getElementById('sourceSearchInput');
+        const sourceItems = document.querySelectorAll('.source-item');
+        
+        sourceSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            sourceItems.forEach(item => {
+                const sourceName = item.getAttribute('data-source-name');
+                if (sourceName.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Category selection - Select All / Clear All
+        document.getElementById('selectAllCategories').addEventListener('click', function() {
+            document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+        
+        document.getElementById('clearAllCategories').addEventListener('click', function() {
+            document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
+    });
+    
+    // Function to handle source selection
+    function selectSource(event, sourceId) {
+        event.preventDefault();
+        
+        // Create a form for source selection
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '{% url 'home' %}';
+        
+        // Add source if not empty
+        if (sourceId) {
+            const sourceInput = document.createElement('input');
+            sourceInput.type = 'hidden';
+            sourceInput.name = 'source';
+            sourceInput.value = sourceId;
+            form.appendChild(sourceInput);
+        }
+        
+        // Add all selected categories
+        {% for category_id in selected_categories %}
+        const categoryInput{{ forloop.counter }} = document.createElement('input');
+        categoryInput{{ forloop.counter }}.type = 'hidden';
+        categoryInput{{ forloop.counter }}.name = 'categories';
+        categoryInput{{ forloop.counter }}.value = '{{ category_id }}';
+        form.appendChild(categoryInput{{ forloop.counter }});
+        {% endfor %}
+        
+        // Add search query if present
+        {% if query %}
+        const queryInput = document.createElement('input');
+        queryInput.type = 'hidden';
+        queryInput.name = 'q';
+        queryInput.value = '{{ query }}';
+        form.appendChild(queryInput);
+        {% endif %}
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Function to remove search filter
+    function removeSearchFilter(event) {
+        event.preventDefault();
+        
+        // Create form and keep all other filters
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '{% url 'home' %}';
+        
+        // Add source if present
+        {% if selected_source %}
+        const sourceInput = document.createElement('input');
+        sourceInput.type = 'hidden';
+        sourceInput.name = 'source';
+        sourceInput.value = '{{ selected_source }}';
+        form.appendChild(sourceInput);
+        {% endif %}
+        
+        // Add all selected categories
+        {% for category_id in selected_categories %}
+        const categoryInput{{ forloop.counter }} = document.createElement('input');
+        categoryInput{{ forloop.counter }}.type = 'hidden';
+        categoryInput{{ forloop.counter }}.name = 'categories';
+        categoryInput{{ forloop.counter }}.value = '{{ category_id }}';
+        form.appendChild(categoryInput{{ forloop.counter }});
+        {% endfor %}
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Function to remove category filter
+    function removeCategoryFilter(event, categoryId) {
+        event.preventDefault();
+        
+        // Create form and keep all other filters
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '{% url 'home' %}';
+        
+        // Add source if present
+        {% if selected_source %}
+        const sourceInput = document.createElement('input');
+        sourceInput.type = 'hidden';
+        sourceInput.name = 'source';
+        sourceInput.value = '{{ selected_source }}';
+        form.appendChild(sourceInput);
+        {% endif %}
+        
+        // Add all selected categories except the one being removed
+        {% for category_id in selected_categories %}
+        if ('{{ category_id }}' !== categoryId) {
+            const categoryInput = document.createElement('input');
+            categoryInput.type = 'hidden';
+            categoryInput.name = 'categories';
+            categoryInput.value = '{{ category_id }}';
+            form.appendChild(categoryInput);
+        }
+        {% endfor %}
+        
+        // Add search query if present
+        {% if query %}
+        const queryInput = document.createElement('input');
+        queryInput.type = 'hidden';
+        queryInput.name = 'q';
+        queryInput.value = '{{ query }}';
+        form.appendChild(queryInput);
+        {% endif %}
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Function to remove source filter
+    function removeSourceFilter(event) {
+        event.preventDefault();
+        
+        // Create form and keep all other filters
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '{% url 'home' %}';
+        
+        // Add all selected categories
+        {% for category_id in selected_categories %}
+        const categoryInput = document.createElement('input');
+        categoryInput.type = 'hidden';
+        categoryInput.name = 'categories';
+        categoryInput.value = '{{ category_id }}';
+        form.appendChild(categoryInput);
+        {% endfor %}
+        
+        // Add search query if present
+        {% if query %}
+        const queryInput = document.createElement('input');
+        queryInput.type = 'hidden';
+        queryInput.name = 'q';
+        queryInput.value = '{{ query }}';
+        form.appendChild(queryInput);
+        {% endif %}
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
 {% endblock %} 

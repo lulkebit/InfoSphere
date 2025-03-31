@@ -6,47 +6,207 @@
     <title>{% block title %}InfoSphere - News Aggregator{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary-color: #f9fafb;
+            --accent-color: #8b5cf6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --card-bg-light: rgba(255, 255, 255, 0.7);
+            --card-bg-dark: rgba(30, 30, 30, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
         body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            background-image: linear-gradient(135deg, #f0f4ff 0%, #f9fafb 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
+        
+        /* Glassmorphism elements */
+        .glass-card {
+            background: var(--card-bg-light);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        .glass-navbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Dark mode styles */
         .dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
+            background-color: #0f172a;
+            background-image: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
         }
-        .dark-mode .card {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
+        
+        .dark-mode .glass-card {
+            background: var(--card-bg-dark);
+            border-color: rgba(255, 255, 255, 0.1);
         }
-        .dark-mode .navbar {
-            background-color: #1e1e1e !important;
+        
+        .dark-mode .glass-navbar {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border-color: rgba(255, 255, 255, 0.1);
         }
+        
+        .dark-mode .text-dark {
+            color: #e2e8f0 !important;
+        }
+        
         .dark-mode .bg-light {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0;
+            background-color: #1e293b !important;
+            color: #e2e8f0;
         }
+        
+        .dark-mode .list-group-item {
+            background-color: rgba(30, 41, 59, 0.7);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark-mode .dropdown-menu {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .dark-mode .dropdown-item {
+            color: #e2e8f0;
+        }
+        
+        .dark-mode .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom button styles */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Navbar customization */
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+        
+        /* Layout adjustments */
         main {
             flex: 1;
+            padding: 2rem 0;
         }
+        
         footer {
             margin-top: auto;
+            padding: 2rem 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
-        .news-card {
-            transition: transform 0.2s;
+        
+        /* Additional utility classes */
+        .rounded-xl {
+            border-radius: 12px !important;
         }
-        .news-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        
+        .shadow-sm {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        .shadow-md {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+            border-radius: 6px;
+        }
+        
+        /* Search bar */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 9999px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .dark-mode .search-input {
+            background: rgba(30, 41, 59, 0.7);
+            color: #e2e8f0;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
         }
     </style>
     {% block extra_styles %}{% endblock %}
 </head>
 <body {% if request.user.is_authenticated and request.user.userpreference.dark_mode %}class="dark-mode"{% endif %}>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light glass-navbar sticky-top mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand text-primary" href="{% url 'home' %}">
                 <i class="bi bi-newspaper"></i> InfoSphere
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,23 +215,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                        <a class="nav-link {% if request.path == '/' %}active fw-semibold{% endif %}" href="{% url 'home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/categories/' in request.path %}active{% endif %}" href="{% url 'categories' %}">Categories</a>
+                        <a class="nav-link {% if '/categories/' in request.path %}active fw-semibold{% endif %}" href="{% url 'categories' %}">Categories</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if '/sources/' in request.path %}active{% endif %}" href="{% url 'sources' %}">Sources</a>
+                        <a class="nav-link {% if '/sources/' in request.path %}active fw-semibold{% endif %}" href="{% url 'sources' %}">Sources</a>
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link {% if '/bookmarks/' in request.path %}active{% endif %}" href="{% url 'bookmarks' %}">Bookmarks</a>
+                        <a class="nav-link {% if '/bookmarks/' in request.path %}active fw-semibold{% endif %}" href="{% url 'bookmarks' %}">Bookmarks</a>
                     </li>
                     {% endif %}
                 </ul>
-                <form class="d-flex me-2" action="{% url 'home' %}" method="get">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search news" aria-label="Search" value="{{ query|default:'' }}">
-                    <button class="btn btn-outline-light" type="submit">Search</button>
+                <form class="d-flex me-2 search-container" action="{% url 'home' %}" method="get">
+                    <i class="bi bi-search search-icon"></i>
+                    <input class="form-control search-input" type="search" name="q" placeholder="Search news" aria-label="Search" value="{{ query|default:'' }}">
                 </form>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
@@ -79,18 +239,18 @@
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle"></i> {{ user.username }}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{% url 'preferences' %}">Preferences</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end rounded-xl shadow-md" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'preferences' %}"><i class="bi bi-gear me-2"></i>Preferences</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        <a class="nav-link btn btn-outline-primary btn-sm rounded-pill px-3 me-2" href="{% url 'login' %}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        <a class="nav-link btn btn-primary btn-sm rounded-pill px-3" href="{% url 'register' %}">Register</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -101,7 +261,7 @@
     <main class="container mb-4">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert glass-card alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -111,32 +271,32 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white py-4 mt-4">
+    <footer class="text-white py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5>InfoSphere</h5>
-                    <p>Your one-stop news aggregator for staying informed about the world.</p>
+                    <h5 class="mb-3 fw-bold">InfoSphere</h5>
+                    <p class="mb-3 opacity-75">Your one-stop news aggregator for staying informed about the world.</p>
                 </div>
                 <div class="col-md-3">
-                    <h5>Quick Links</h5>
+                    <h5 class="mb-3 fw-bold">Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="{% url 'home' %}" class="text-white">Home</a></li>
-                        <li><a href="{% url 'categories' %}" class="text-white">Categories</a></li>
-                        <li><a href="{% url 'sources' %}" class="text-white">Sources</a></li>
+                        <li class="mb-2"><a href="{% url 'home' %}" class="text-white opacity-75 text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="{% url 'categories' %}" class="text-white opacity-75 text-decoration-none">Categories</a></li>
+                        <li class="mb-2"><a href="{% url 'sources' %}" class="text-white opacity-75 text-decoration-none">Sources</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h5>Connect</h5>
+                    <h5 class="mb-3 fw-bold">Connect</h5>
                     <div class="d-flex gap-3 fs-4">
-                        <a href="#" class="text-white"><i class="bi bi-twitter"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-white opacity-75"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-white opacity-75"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-white opacity-75"><i class="bi bi-instagram"></i></a>
                     </div>
                 </div>
             </div>
-            <hr>
-            <p class="text-center mb-0">&copy; {% now "Y" %} InfoSphere. All rights reserved.</p>
+            <hr class="opacity-25">
+            <p class="text-center mb-0 opacity-75">&copy; {% now "Y" %} InfoSphere. All rights reserved.</p>
         </div>
     </footer>
 

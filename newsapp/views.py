@@ -23,10 +23,41 @@ def home(request):
     news_list = News.objects.select_related('source').prefetch_related('categories').order_by('-published_at')
     categories = Category.objects.all()
     
-    # Filter by category if specified
-    category_id = request.GET.get('category')
-    if category_id:
-        news_list = news_list.filter(categories__id=category_id)
+    # Handle multi-category selection with the "Add to Filter" functionality
+    if request.GET.get('multi_select') == 'true':
+        # If multi_select is true, we want to preserve existing selected categories
+        # from the referer URL (if any) and add the new one
+        selected_categories = request.GET.getlist('categories', [])
+        referer = request.META.get('HTTP_REFERER', '')
+        
+        # Create redirect URL with all selected categories
+        redirect_url = 'home'
+        params = []
+        
+        # Add all categories
+        for category in selected_categories:
+            params.append(f'categories={category}')
+        
+        # Add source if present
+        source_id = request.GET.get('source')
+        if source_id:
+            params.append(f'source={source_id}')
+        
+        # Add search query if present
+        query = request.GET.get('q')
+        if query:
+            params.append(f'q={query}')
+        
+        # Redirect to the home URL with all parameters
+        if params:
+            redirect_url += '?' + '&'.join(params)
+        
+        return redirect(redirect_url)
+    
+    # Filter by multiple categories if specified
+    selected_categories = request.GET.getlist('categories')
+    if selected_categories:
+        news_list = news_list.filter(categories__id__in=selected_categories).distinct()
     
     # Filter by source if specified
     source_id = request.GET.get('source')
@@ -53,7 +84,7 @@ def home(request):
         'news_items': news_items,
         'categories': categories,
         'sources': sources,
-        'selected_category': category_id,
+        'selected_categories': selected_categories,
         'selected_source': source_id,
         'query': query,
     }

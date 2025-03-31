@@ -49,7 +49,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Error fetching from GNews: {str(e)}"))
         
         # Cleanup old news (optional - removes news older than 30 days)
-        self.cleanup_old_news()
+        # self.cleanup_old_news()
         
         self.stdout.write(self.style.SUCCESS('News fetch completed!'))
 
