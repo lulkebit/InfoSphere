@@ -1,57 +1,47 @@
-# InfoSphere - News Aggregator
+# InfoSphere
 
-InfoSphere is a web-based news aggregator that collects news from various sources and presents them in a user-friendly interface. Built with Django and PostgreSQL, this application demonstrates a full relational database implementation with a modern web frontend.
+A modern news aggregation and management platform built with Django. InfoSphere collects news from various sources, categorizes them, and provides a personalized news reading experience.
 
 ## Features
 
-- Browse news articles from various sources
-- Filter news by categories and sources
-- Search functionality for finding specific news
-- User authentication system
-- Personal bookmarks for saving articles
-- Commenting system for user engagement
-- User preferences for customization (dark mode, preferred categories and sources)
+- **News Aggregation**: Automatically fetches news from multiple sources
+- **Categorization**: Organizes news by categories for easy browsing
+- **User Accounts**: Personal user accounts with preferences and bookmarks
+- **Bookmarking**: Save articles to read later
+- **Comments**: Discuss news articles with other users
+- **Search**: Find specific news based on keywords
+- **Dark Mode**: Toggle between light and dark themes
+- **Personalization**: Set preferences for news sources and categories
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
 
-- **Backend**: Django 5.1
-- **Database**: PostgreSQL
-- **Frontend**: Bootstrap 5, HTML5, CSS3, JavaScript
+- Django 5.1.7
+- PostgreSQL/SQLite
+- Bootstrap 5
+- Python 3.x
 
-## Database Schema
+## Prerequisites
 
-The application uses a relational database model with the following tables:
-
-- **Categories**: Stores news categories
-- **Sources**: Information about news sources
-- **News**: The main news articles
-- **News_Categories**: Many-to-many relationship between news and categories
-- **Users**: User account information (uses Django's built-in User model)
-- **User_News**: Relationship between users and news
-- **Comments**: User comments on news articles
-- **Bookmarks**: User's saved articles
-- **User_Preferences**: User customization settings
-
-## Installation and Setup
-
-### Prerequisites
-
-- Python 3.8+
-- PostgreSQL 13+
+- Python 3.8 or higher
 - pip (Python package manager)
+- Virtual environment tool (recommended)
 
-### Steps
+## Installation
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/infosphere.git
-   cd infosphere
+   git clone <repository-url>
+   cd InfoSphere
    ```
 
 2. Create and activate a virtual environment:
    ```
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   # On Windows
+   venv\Scripts\activate
+   # On macOS/Linux
+   source venv/bin/activate
    ```
 
 3. Install dependencies:
@@ -59,61 +49,62 @@ The application uses a relational database model with the following tables:
    pip install -r requirements.txt
    ```
 
-4. Create a PostgreSQL database:
+4. Set up environment variables:
+   Create a `.env` file in the project root with the following variables:
    ```
-   createdb infosphere_db
+   SECRET_KEY=your_django_secret_key
+   DEBUG=True
+   DATABASE_URL=your_database_url
+   # Add any API keys needed for news sources
    ```
 
-5. Configure the database in `settings.py` (already done if using the provided code)
-
-6. Run migrations:
+5. Run migrations:
    ```
    python manage.py migrate
    ```
 
-7. Populate the database with sample data:
-   ```
-   python manage.py populate_db
-   ```
-
-8. Create a superuser (admin):
+6. Create a superuser:
    ```
    python manage.py createsuperuser
    ```
 
-9. Run the development server:
+7. Start the development server:
    ```
    python manage.py runserver
    ```
 
-10. Access the application at http://127.0.0.1:8000/
+8. Access the application at http://localhost:8000
 
-## Sample Login
+## Usage
 
-After running the `populate_db` command, you can log in with:
-- Username: `testuser`
-- Password: `testpassword`
+### Admin Interface
 
-## SQL Queries
+Access the admin interface at http://localhost:8000/admin to:
+- Manage news sources
+- Create and edit categories
+- Moderate user comments
+- Manage user accounts
 
-The `sql_queries.sql` file contains various SQL queries that demonstrate the relational aspects of the database, including:
+### Fetching News
 
-- Table creation statements
-- Basic SELECT queries
-- Advanced queries with JOINs and aggregations
-- Search operations
-- INSERT, UPDATE, DELETE examples
-- Transaction examples
-- Views and indexes
+News can be fetched manually by staff users by clicking the "Refresh News" button or automatically using:
+```
+python manage.py fetch_news
+```
 
-## Screenshots
+### User Features
 
-(Screenshots would be added here)
+- **Registration/Login**: Create an account to access personalized features
+- **Homepage**: Browse the latest news with filtering options
+- **News Detail**: Read full articles and participate in discussions
+- **Bookmarks**: Save and organize articles for later reading
+- **Preferences**: Customize your news feed with preferred sources and categories
 
-## License
+## Project Structure
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributors
-
-- Your Name 
+- `infosphere/`: Core project settings
+- `newsapp/`: Main application with models, views, and templates
+  - `models.py`: Database models for news, categories, users, etc.
+  - `views.py`: View functions for rendering pages
+  - `templates/`: HTML templates for the frontend
+  - `management/commands/`: Custom management commands
