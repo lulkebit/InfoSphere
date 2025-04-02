@@ -52,10 +52,12 @@ A modern news aggregation and management platform built with Django. InfoSphere 
 4. Set up environment variables:
    Create a `.env` file in the project root with the following variables:
    ```
-   SECRET_KEY=your_django_secret_key
-   DEBUG=True
-   DATABASE_URL=your_database_url
-   # Add any API keys needed for news sources
+   # API Keys for News Services
+   # Replace these placeholder values with your actual API keys
+   # Get a NewsAPI key from: https://newsapi.org/
+   NEWS_API_KEY=
+   # Get a GNews API key from: https://gnews.io/
+   GNEWS_API_KEY= 
    ```
 
 5. Run migrations:
