@@ -150,9 +150,43 @@
         footer {
             margin-top: auto;
             padding: 2rem 0;
-            background: rgba(15, 23, 42, 0.9);
+            background: var(--card-bg-light);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        footer a {
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        
+        footer a:hover {
+            color: var(--primary-color);
+            transform: translateX(3px);
+        }
+        
+        footer .social-icon {
+            transition: all 0.2s ease;
+        }
+        
+        footer .social-icon:hover {
+            transform: translateY(-3px);
+        }
+        
+        .dark-mode footer {
+            background: var(--card-bg-dark);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+        
+        .dark-mode footer a {
+            color: #e2e8f0;
+        }
+        
+        .dark-mode footer a:hover {
+            color: var(--primary-color);
         }
         
         /* Additional utility classes */
@@ -271,32 +305,32 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="text-white py-4">
+    <footer class="py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5 class="mb-3 fw-bold">InfoSphere</h5>
-                    <p class="mb-3 opacity-75">Your one-stop news aggregator for staying informed about the world.</p>
+                    <h5 class="mb-3 fw-bold text-primary">InfoSphere</h5>
+                    <p class="mb-3">Your one-stop news aggregator for staying informed about the world.</p>
                 </div>
                 <div class="col-md-3">
-                    <h5 class="mb-3 fw-bold">Quick Links</h5>
+                    <h5 class="mb-3 fw-bold text-primary">Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{% url 'home' %}" class="text-white opacity-75 text-decoration-none">Home</a></li>
-                        <li class="mb-2"><a href="{% url 'categories' %}" class="text-white opacity-75 text-decoration-none">Categories</a></li>
-                        <li class="mb-2"><a href="{% url 'sources' %}" class="text-white opacity-75 text-decoration-none">Sources</a></li>
+                        <li class="mb-2"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="{% url 'categories' %}" class="text-decoration-none">Categories</a></li>
+                        <li class="mb-2"><a href="{% url 'sources' %}" class="text-decoration-none">Sources</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h5 class="mb-3 fw-bold">Connect</h5>
+                    <h5 class="mb-3 fw-bold text-primary">Connect</h5>
                     <div class="d-flex gap-3 fs-4">
-                        <a href="#" class="text-white opacity-75"><i class="bi bi-twitter"></i></a>
-                        <a href="#" class="text-white opacity-75"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="text-white opacity-75"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-primary social-icon"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-primary social-icon"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-primary social-icon"><i class="bi bi-instagram"></i></a>
                     </div>
                 </div>
             </div>
-            <hr class="opacity-25">
-            <p class="text-center mb-0 opacity-75">&copy; {% now "Y" %} InfoSphere. All rights reserved.</p>
+            <hr>
+            <p class="text-center mb-0">&copy; {% now "Y" %} InfoSphere. All rights reserved.</p>
         </div>
     </footer>
 
